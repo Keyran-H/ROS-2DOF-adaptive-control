@@ -7,9 +7,11 @@ project(ros_experimenting)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+find_package(gazebo REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  gazebo_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -119,8 +121,11 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+include_directories(${GAZEBO_INCLUDE_DIRS})
+link_directories(${GAZEBO_LIBRARY_DIRS})
+
 add_executable(listener src/gazebo_tester.cpp)
-target_link_libraries(listener ${catkin_LIBRARIES})
+target_link_libraries(listener ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
