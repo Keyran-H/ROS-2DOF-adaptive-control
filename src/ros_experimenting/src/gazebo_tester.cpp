@@ -16,7 +16,8 @@ void chatterCallback(const std_msgs::String::ConstPtr& msg)
 }
 
 // Function is called everytime a message is received.
-void cb(ConstWorldStatisticsPtr &_msg)
+// void cb(ConstWorldStatisticsPtr &_msg)
+void cb(ConstForceTorquePtr &_msg)
 {
   // Dump the message contents to stdout.
   std::cout << _msg->DebugString();
@@ -39,7 +40,8 @@ int main(int argc, char **argv)
   node->Init();
 
   // Listen to Gazebo world_stats topic
-  gazebo::transport::SubscriberPtr gazebo_sub = node->Subscribe("~/world_stats", cb);
+//   gazebo::transport::SubscriberPtr gazebo_sub = node->Subscribe("~/world_stats", cb);
+gazebo::transport::SubscriberPtr gazebo_sub = node->Subscribe("/gazebo/default/model_1/joint_01/force_torque/wrench", cb);
 
   // Busy wait loop...replace with your own code as needed.
   while (true)
