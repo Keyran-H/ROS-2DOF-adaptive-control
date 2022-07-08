@@ -7,6 +7,16 @@
 
 // TODO: Figure out how can I know which are the correct header files.
 
+/*
+
+How to run this?
+1. roscore
+2. Start the gazebo sim first: gazebo random_files/force_torque_tutorial.world
+3. Run the listner: rosrun ros_experimenting listener
+
+
+*/
+
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
  */
@@ -17,7 +27,7 @@ void chatterCallback(const std_msgs::String::ConstPtr& msg)
 
 // Function is called everytime a message is received.
 // void cb(ConstWorldStatisticsPtr &_msg)
-void cb(ConstForceTorquePtr &_msg)
+void cb(ConstForceTorquePtr &_msg) // TODO: Figure out why some IDs are not being populated. (prob a Gazebo issue)
 {
   // Dump the message contents to stdout.
   std::cout << _msg->DebugString();
