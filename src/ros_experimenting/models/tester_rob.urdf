@@ -1,0 +1,21 @@
+<robot name="dummy_robot">
+  <link name="link1" />
+
+  <joint name="joint2" type="continuous">
+    <parent link="link1"/>
+    <child link="link3"/>
+    <origin xyz="-2 5 0" rpy="0 0 1.57" />
+    <axis xyz="-0.707 0.707 0" />
+  </joint>
+
+  <link name="link3" />
+
+  <joint name="joint3" type="continuous">
+    <parent link="link3"/>
+    <child link="link4"/>
+    <origin xyz="5 0 0" rpy="0 0 -1.57" />
+    <axis xyz="0.707 -0.707 0" />
+  </joint>
+
+  <link name="link4" />
+</robot>
