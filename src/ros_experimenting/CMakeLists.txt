@@ -121,11 +121,14 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-include_directories(${GAZEBO_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIR} ${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
-add_executable(listener src/gazebo_tester.cpp)
+add_executable(listener src/gazebo_tester_sub.cpp)
 target_link_libraries(listener ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_executable(publisher src/gazebo_tester_pub.cpp)
+target_link_libraries(publisher ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
