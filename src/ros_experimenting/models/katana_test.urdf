@@ -80,40 +80,41 @@
   <!-- *************** links *************** -->
   <gazebo reference="katana_base_link">
     <material value="Gazebo/Grey"/>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <gazebo reference="katana_motor1_pan_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <gazebo reference="katana_motor2_lift_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <gazebo reference="katana_motor3_lift_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <gazebo reference="katana_motor4_lift_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <gazebo reference="katana_motor5_wrist_roll_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <gazebo reference="katana_gripper_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <!-- TODO: set friction parameters (mu1, mu2, kp, kd) for fingers (see PR2 gripper.gazebo.xacro) -->
   <gazebo reference="katana_r_finger_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <!-- TODO: set friction parameters (mu1, mu2, kp, kd) for fingers (see PR2 gripper.gazebo.xacro) -->
   <gazebo reference="katana_l_finger_link">
     <material value="Gazebo/Grey"/>
-    <turnGravityOff>true</turnGravityOff>
+    <turnGravityOff>false</turnGravityOff>
   </gazebo>
   <!-- *************** joints ************** -->
   <!-- note: initial_joint_position isn't supported by Gazebo yet
@@ -154,6 +155,12 @@
        speed limit for all joints, according to the Katana 4D documentation -->
   <!-- the effort limits have been measured experimentally from the maximum effort the Gazebo controller 
        uses in normal conditions -->
+  <link name="world"/>
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="katana_base_link"/>
+  </joint>
+
   <link name="katana_base_link">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -183,6 +190,7 @@
     <origin rpy="0 0 0" xyz="0 0 0.2015"/>
     <axis xyz="0 0 1"/>
     <limit effort="1.5" lower="-3.025528" upper="2.891097" velocity="2.208932"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_motor1_pan_link">
     <visual>
@@ -211,6 +219,7 @@
     <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="0.6" lower="-0.135228" upper="2.168572" velocity="1.190799"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_motor2_lift_link">
     <visual>
@@ -244,6 +253,7 @@
     <axis xyz="0 0 1"/>
     <!-- unexplicably, the measured velocity limit of this motor is exactly half of what vel_enc2rad(180) says -->
     <limit effort="0.25" lower="-2.221804" upper="2.054223" velocity="1.190799"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_motor3_lift_link">
     <visual>
@@ -276,6 +286,7 @@
     <origin rpy="3.14159265359 0 0" xyz="0.139 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="0.1" lower="-2.033309" upper="1.876133" velocity="2.208932"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_motor4_lift_link">
     <visual>
@@ -308,6 +319,7 @@
     <origin rpy="1.57079632679 0 -1.57079632679" xyz="0.1473 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="0.01" lower="-2.993240" upper="2.870985" velocity="2.208932"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_motor5_wrist_roll_link">
     <visual>
@@ -337,6 +349,7 @@
     <parent link="katana_motor5_wrist_roll_link"/>
     <child link="katana_gripper_link"/>
     <origin rpy="0 0 0" xyz="0.0323 0 0"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_gripper_link">
     <visual>
@@ -364,6 +377,7 @@
     <origin rpy="0 0 0" xyz="0.034 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="0.5" lower="-0.44" upper="0.30" velocity="0.718834"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_r_finger_link">
     <visual>
@@ -391,6 +405,7 @@
     <origin rpy="3.14159265359 0 0" xyz="0.034 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="0.5" lower="-0.44" upper="0.30" velocity="0.718834"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_l_finger_link">
     <visual>
@@ -416,6 +431,7 @@
     <parent link="katana_motor5_wrist_roll_link"/>
     <child link="katana_gripper_tool_frame"/>
     <origin rpy="0 1.57079632679 0" xyz="0.11 0 0"/>
+    <dynamics friction="10.0" />
   </joint>
   <link name="katana_gripper_tool_frame">
     <!-- This is the coordinate system of the end effector (this is the position
