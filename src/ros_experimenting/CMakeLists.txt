@@ -130,6 +130,9 @@ target_link_libraries(listener ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_executable(publisher src/gazebo_tester_pub.cpp)
 target_link_libraries(publisher ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_executable(controller src/controller_experiment.cpp)
+target_link_libraries(controller ${catkin_LIBRARIES})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/ros_experimenting.cpp
