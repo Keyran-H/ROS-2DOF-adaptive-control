@@ -461,8 +461,8 @@
   <gazebo>
     <plugin name="gazebo_ros_force" filename="libgazebo_ros_force.so">
       <alwaysOn>true</alwaysOn>
-      <update>1000</update>
-      <updateRate>1000.0</updateRate>
+      <update>1</update>
+      <updateRate>1.0</updateRate>
       <bodyName>katana_motor1_pan_link</bodyName>
       <topicName>force/katana_motor1_pan_link</topicName>
     </plugin>
@@ -470,11 +470,60 @@
   <gazebo>
     <plugin name="gazebo_ros_force" filename="libgazebo_ros_force.so">
       <alwaysOn>true</alwaysOn>
-      <update>1000</update>
-      <updateRate>1000.0</updateRate>
+      <update>1</update>
+      <updateRate>1.0</updateRate>
       <bodyName>katana_motor2_lift_link</bodyName>
       <topicName>force/katana_motor2_lift_link</topicName>
     </plugin>
   </gazebo>
+  <gazebo>
+    <plugin name="gazebo_ros_force" filename="libgazebo_ros_force.so">
+      <alwaysOn>true</alwaysOn>
+      <update>1</update>
+      <updateRate>1.0</updateRate>
+      <bodyName>katana_motor3_lift_link</bodyName>
+      <topicName>force/katana_motor3_lift_link</topicName>
+    </plugin>
+  </gazebo>
 
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <jointName>katana_motor1_pan_joint</jointName>
+      <updateRate>10.0</updateRate>
+      <alwaysOn>true</alwaysOn>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <jointName>katana_motor2_lift_joint</jointName>
+      <updateRate>10.0</updateRate>
+      <alwaysOn>true</alwaysOn>
+    </plugin>
+  </gazebo>
+
+
+
+  <!-- The ft_sensor plugin -->
+  <!-- <gazebo reference="katana_motor1_pan_joint">
+    <provideFeedback>true</provideFeedback>
+  </gazebo>
+  <gazebo>
+    <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+      <updateRate>1000.0</updateRate>
+      <topicName>ft_sensor/katana_motor1_pan_joint</topicName>
+      <jointName>katana_motor1_pan_joint</jointName>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="katana_motor2_lift_joint">
+    <provideFeedback>true</provideFeedback>
+  </gazebo>
+  <gazebo>
+    <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+      <updateRate>1000.0</updateRate>
+      <topicName>ft_sensor/katana_motor2_lift_joint</topicName>
+      <jointName>katana_motor2_lift_joint</jointName>
+    </plugin>
+  </gazebo> -->
 </robot>
