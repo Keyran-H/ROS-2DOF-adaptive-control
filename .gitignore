@@ -2,4 +2,4 @@ build/
 devel/
 .vscode/
 .catkin_workspace
-
+src/katana_description/
