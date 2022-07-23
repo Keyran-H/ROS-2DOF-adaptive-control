@@ -8,70 +8,70 @@
   <transmission name="katana_motor1_pan_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="katana_motor1_pan_joint">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="katana_motor1_pan_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="katana_motor2_lift_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="katana_motor2_lift_joint">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="katana_motor2_lift_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="katana_motor3_lift_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="katana_motor3_lift_joint">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="katana_motor3_lift_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="katana_motor4_lift_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="katana_motor4_lift_joint">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="katana_motor4_lift_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="katana_motor5_wrist_roll_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="katana_motor5_wrist_roll_joint">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="katana_motor5_wrist_roll_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="katana_r_finger_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="katana_r_finger_joint">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="katana_r_finger_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
   <transmission name="katana_l_finger_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="katana_l_finger_joint">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="katana_l_finger_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
@@ -458,7 +458,15 @@
     </inertial>
   </link>
 
+  <!-- ros_control plugin -->
   <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/katana_robot</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo>
+
+  <!-- <gazebo>
     <plugin name="gazebo_ros_force" filename="libgazebo_ros_force.so">
       <alwaysOn>true</alwaysOn>
       <update>1</update>
@@ -484,9 +492,9 @@
       <bodyName>katana_motor3_lift_link</bodyName>
       <topicName>force/katana_motor3_lift_link</topicName>
     </plugin>
-  </gazebo>
+  </gazebo> -->
 
-  <gazebo>
+  <!-- <gazebo>
     <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
       <jointName>katana_motor1_pan_joint</jointName>
       <updateRate>10.0</updateRate>
@@ -500,7 +508,7 @@
       <updateRate>10.0</updateRate>
       <alwaysOn>true</alwaysOn>
     </plugin>
-  </gazebo>
+  </gazebo> -->
 
 
 
