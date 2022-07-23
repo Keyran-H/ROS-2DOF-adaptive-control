@@ -1,0 +1,16 @@
+<launch>
+  <param name="robot_description" command="cat $(find ros_experimenting)/models/katana_test.urdf" />
+
+  <rosparam file="$(find my_controller)/config/katana_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	output="screen" ns="/katana_robot" args="joint_state_controller katana_motor2_lift_joint_controller"/>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+	respawn="false" output="screen">
+    <remap from="/joint_states" to="/katana_robot/joint_states" />
+  </node>
+
+</launch>
