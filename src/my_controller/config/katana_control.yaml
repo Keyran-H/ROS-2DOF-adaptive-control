@@ -1,11 +1,11 @@
-katana_robot:
+planar_RR_robot:
   # Publish all joint states -----------
   joint_state_controller:
     type: joint_state_controller/JointStateController
     publish_rate: 50
   
   # Position Controller -----------
-  katana_motor2_lift_joint_controller:
+  planar_RR_joint1_controller:
     type: my_controller/MyPositionController
-    joint: katana_motor2_lift_joint
+    joint: planar_RR_joint1
     gain: 0.1

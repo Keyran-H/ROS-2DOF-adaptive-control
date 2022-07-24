@@ -10,11 +10,12 @@ namespace my_controller_ns
     {
         bool init(hardware_interface::EffortJointInterface* hw, ros::NodeHandle &n)
         {
-            std::string my_joint = "katana_motor2_lift_joint";
+            // std::string my_joint = "katana_motor2_lift_joint";
+            std::string my_joint = "planar_RR_joint1";
             joint_ = hw->getHandle(my_joint);
             command_ = joint_.getPosition();
 
-            gain_ = 0.1;
+            gain_ = 500;
             
             sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &MyPositionController::setCommandCB, this);
 
@@ -25,6 +26,8 @@ namespace my_controller_ns
         {
             double error = command_ - joint_.getPosition();
             double commanded_effort = error * gain_;
+            ROS_INFO("commanded_effort: %f", commanded_effort);
+            ROS_INFO("Joint Position: %f", joint_.getPosition());
             joint_.setCommand(commanded_effort);
         }
 
