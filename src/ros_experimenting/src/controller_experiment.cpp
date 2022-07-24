@@ -46,16 +46,16 @@ int main(int argc, char **argv){
     controller_ns::PositionController ctrl;
 
 
-    while (ros::ok()){
-        const ros::Time time = ros::Time::now();
-        const ros::Duration period = time - prev_time;
+    // while (ros::ok()){
+    //     const ros::Time time = ros::Time::now();
+    //     const ros::Duration period = time - prev_time;
 
-        robot.read();
-        cm.update(time, period);
-        robot.write();
-        
-        rate.sleep();
-    }
+    //     robot.read();
+    //     cm.update(time, period);
+    //     robot.write();
+
+    //     rate.sleep();
+    // }
     
     // ros::spin();
 
