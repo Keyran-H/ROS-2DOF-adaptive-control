@@ -15,7 +15,7 @@ namespace my_controller_ns
             joint_ = hw->getHandle(my_joint);
             command_ = joint_.getPosition();
 
-            gain_ = 0.1;
+            gain_ = 100.0;
             
             sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &MyPositionController::setCommandCB, this);
 
