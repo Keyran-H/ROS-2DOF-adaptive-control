@@ -1,7 +1,7 @@
 <launch>
   <param name="robot_description" command="cat $(find ros_experimenting)/models/planar_RR_robot.urdf" />
 
-  <rosparam file="$(find my_controller)/config/katana_control.yaml" command="load"/>
+  <rosparam file="$(find my_controller)/config/planar_RR_robot_control.yaml" command="load"/>
 
   <!-- load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
