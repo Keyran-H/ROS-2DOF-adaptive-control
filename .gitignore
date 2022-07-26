@@ -3,3 +3,4 @@ devel/
 .vscode/
 .catkin_workspace
 src/katana_description/
+src/matlab_files/local_experimenting/
