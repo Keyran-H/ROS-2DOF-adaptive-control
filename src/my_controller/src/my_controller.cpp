@@ -3,6 +3,15 @@
 #include <pluginlib/class_list_macros.h>
 #include <std_msgs/Float64.h>
 
+// How to run this old code future me!
+/*
+roslaunch gazebo_ros empty_world.launch
+rosrun gazebo_ros spawn_model -file planar_RR_robot.urdf -urdf -z 1 -model planar_RR_robot
+roslaunch my_controller/launch/controllers.launch
+rostopic pub -1 /planar_RR_robot/planar_RR_joint1_controller/command std_msgs/Float64 "data: 1.5"
+*/
+
+
 namespace my_controller_ns
 {
 
@@ -15,7 +24,7 @@ namespace my_controller_ns
             joint_ = hw->getHandle(my_joint);
             command_ = joint_.getPosition();
 
-            gain_ = 0.1;
+            gain_ = 150.0;
             
             sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &MyPositionController::setCommandCB, this);
 
