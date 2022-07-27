@@ -10,11 +10,9 @@ namespace adaptive_controller_ns
     {
         bool init(hardware_interface::EffortJointInterface* hw, ros::NodeHandle &n)
         {
-
             // Read from the csv file
             std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/trajectory_test.csv");
-            std::vector<std::string> data = AdaptiveController::getNextLineAndSplitIntoTokens(file);
-            ROS_INFO("You got through, congrats!");
+            std::vector<std::vector<double>> trajectory = loadTrajectory(file);
 
             // // std::string my_joint = "katana_motor2_lift_joint";
             // std::string my_joint = "planar_RR_joint1";
@@ -24,6 +22,7 @@ namespace adaptive_controller_ns
             // gain_ = 100.0;
             
             sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &AdaptiveController::setCommandCB, this);
+            ROS_INFO("Initialisation complete!");
 
             return true;
         }
@@ -45,26 +44,27 @@ namespace adaptive_controller_ns
         void starting(const ros::Time& time) { }
         void stopping(const ros::Time& time) { }
 
-        std::vector<std::string> getNextLineAndSplitIntoTokens(std::istream& str)
+        std::vector<std::vector<double>> loadTrajectory(std::istream& str)
         {
-            std::vector<std::string>   result;
-            std::string                line;
-            std::getline(str,line);
+            const char delim = ',';
+            std::vector<std::vector<double>> trajectory;
+            std::string line;    
 
-            std::stringstream          lineStream(line);
-            std::string                cell;
+            while(std::getline(str,line))
+            {
+                std::vector<double> trajectory_pt;
+                std::stringstream  ss(line);
+                std::string cell;
 
-            while(std::getline(lineStream,cell, ','))
-            {
-                result.push_back(cell);
+                while (std::getline(ss, cell, delim)) 
+                {
+                    double cell_double = atof(cell.c_str());
+                    trajectory_pt.push_back(cell_double);
+                }
+                trajectory.push_back(trajectory_pt);
             }
-            // This checks for a trailing comma with no data after it.
-            if (!lineStream && cell.empty())
-            {
-                // If there was a trailing comma then add an empty element.
-                result.push_back("");
-            }
-            return result;
+
+            return trajectory;
         }
 
         private:
