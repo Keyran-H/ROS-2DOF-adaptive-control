@@ -11,6 +11,7 @@ find_package(gazebo REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  trajectory_msgs
   gazebo_msgs
 )
 
@@ -132,6 +133,9 @@ target_link_libraries(publisher ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_executable(controller src/controller_experiment.cpp)
 target_link_libraries(controller ${catkin_LIBRARIES})
+
+add_executable(traj_pub src/trajectory_pub.cpp)
+target_link_libraries(traj_pub ${catkin_LIBRARIES})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
