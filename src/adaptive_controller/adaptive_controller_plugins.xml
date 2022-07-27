@@ -1,0 +1,5 @@
+<library path="lib/libadaptive_controller_lib">
+    <class name="adaptive_controller/AdaptiveController"
+           type="adaptive_controller_ns::AdaptiveController"
+           base_class_type="controller_interface::ControllerBase" />
+</library>

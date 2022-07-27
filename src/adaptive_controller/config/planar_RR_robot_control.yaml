@@ -1,0 +1,12 @@
+planar_RR_robot:
+  # Publish all joint states -----------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+  
+  # Position Controller -----------
+  planar_RR_joint_controller:
+    type: adaptive_controller/AdaptiveController
+    joints: 
+      - planar_RR_joint1
+      - planar_RR_joint2
