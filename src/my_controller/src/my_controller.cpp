@@ -37,6 +37,7 @@ namespace my_controller_ns
             double commanded_effort = error * gain_;
             ROS_INFO("commanded_effort: %f", commanded_effort);
             ROS_INFO("Joint Position: %f", joint_.getPosition());
+            ROS_INFO("Joint Velocity: %f", joint_.getVelocity());
             joint_.setCommand(commanded_effort);
         }
 
