@@ -13,32 +13,34 @@ namespace adaptive_controller_ns
             // Read from the csv file
             std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/trajectory_test.csv");
             std::vector<std::vector<double>> trajectory = loadTrajectory(file);
+            ROS_INFO("Trajectory points detected: %ld", trajectory.size());
 
-            // // std::string my_joint = "katana_motor2_lift_joint";
-            // std::string my_joint = "planar_RR_joint1";
-            // joint_ = hw->getHandle(my_joint);
-            // command_ = joint_.getPosition();
+            // Get the joint names
+            std::vector<std::string> joint_names;
+            if(!n.getParam("joints", joint_names) || joint_names.size() != 2)
+            {
+                ROS_ERROR("Failed to find the joint names OR num of joints != 2");
+                return false;
+            }
 
-            // gain_ = 100.0;
+            // Get the joint handler and set the desired position
+            for (size_t i = 0; i < joint_names.size(); i++)
+            {
+                joints_[i] = hw->getHandle(joint_names[i]);
+                command_[i] = joints_[i].getPosition();
+            }
             
-            sub_command_ = n.subscribe<std_msgs::Float64>("command", 1, &AdaptiveController::setCommandCB, this);
             ROS_INFO("Initialisation complete!");
-
+            prev_time = ros::Time::now();
             return true;
         }
 
         void update(const ros::Time& time, const ros::Duration& period)
         {
-            // double error = command_ - joint_.getPosition();
-            // double commanded_effort = error * gain_;
-            // ROS_INFO("commanded_effort: %f", commanded_effort);
-            // ROS_INFO("Joint Position: %f", joint_.getPosition());
-            // joint_.setCommand(commanded_effort);
-        }
-
-        void setCommandCB(const std_msgs::Float64ConstPtr& msg)
-        {
-            command_ = msg->data;
+            ros::Time curr_time = ros::Time::now();
+            ros::Duration duration = curr_time - prev_time;
+            ROS_INFO("Elapsed sec: %f", duration.toSec());
+            prev_time = ros::Time::now();
         }
 
         void starting(const ros::Time& time) { }
@@ -68,10 +70,11 @@ namespace adaptive_controller_ns
         }
 
         private:
-            hardware_interface::JointHandle joint_;
+            hardware_interface::JointHandle joints_[2];
             double gain_;
-            double command_;
+            double command_[2];
             ros::Subscriber sub_command_;
+            ros::Time prev_time;
 
     };
 
