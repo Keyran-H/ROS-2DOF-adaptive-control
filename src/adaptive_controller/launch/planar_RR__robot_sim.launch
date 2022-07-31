@@ -1,0 +1,22 @@
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find ros_experimenting)/worlds/sim.world"/>
+  </include>
+  <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" args="-file $(find ros_experimenting)/models/planar_RR_robot.urdf -urdf -z 1 -model planar_RR_robot"/>
+
+  
+  <param name="robot_description" command="cat $(find ros_experimenting)/models/planar_RR_robot.urdf" />
+
+  <rosparam file="$(find adaptive_controller)/config/planar_RR_robot_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	output="screen" ns="/planar_RR_robot" args="joint_state_controller planar_RR_joint_controller"/>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+	respawn="false" output="screen">
+    <remap from="/joint_states" to="/planar_RR_robot/joint_states" /> -->
+  </node> 
+
+</launch>
