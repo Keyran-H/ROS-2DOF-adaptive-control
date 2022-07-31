@@ -1,12 +1,14 @@
 % Import the Robot
 robot = importrobot("/home/kiran/dissertation/ros_experimenting_ws/src/ros_experimenting/models/planar_RR_robot.urdf");
-currentRobotJConfig = homeConfiguration(robot);
-
-numJoints = numel(currentRobotJConfig);
 endEffector = "planar_RR_link3";
-
-timeStep = 0.5; % seconds
+timeStep = 0.01; % seconds
 toolSpeed = 0.1; % m/s
+showTrajectory = true;
+
+
+currentRobotJConfig = homeConfiguration(robot);
+numJoints = numel(currentRobotJConfig);
+
 initTime = 0;
 jointInit = currentRobotJConfig;
 taskInit = getTransform(robot,jointInit,endEffector);
@@ -45,16 +47,18 @@ ctrlpoints = [jointInitPos',jointFinalPos'];
 show(robot,currentRobotJConfig,'PreservePlot',false,'Frames','off');
 hold on
 
-for i=1:length(trajTimes)
-    for j=1:numJoints
-        configNow(j).JointPosition = q(j,i);% 1x2 matrix
-        configNow(j).JointName = jointNames(j);
+if showTrajectory
+    for i=1:length(trajTimes)
+        for j=1:numJoints
+            configNow(j).JointPosition = q(j,i);% 1x2 matrix
+            configNow(j).JointName = jointNames(j);
+        end
+    
+        poseNow = getTransform(robot,configNow,endEffector);
+        show(robot,configNow,'PreservePlot',false);
+        taskSpaceMarker = plot3(poseNow(1,4),poseNow(2,4),poseNow(3,4),'b.','MarkerSize',20);
+        drawnow;
     end
-
-    poseNow = getTransform(robot,configNow,endEffector);
-    show(robot,configNow,'PreservePlot',false);
-    taskSpaceMarker = plot3(poseNow(1,4),poseNow(2,4),poseNow(3,4),'b.','MarkerSize',20);
-    drawnow;
 end
 
 % Add a legend and title
