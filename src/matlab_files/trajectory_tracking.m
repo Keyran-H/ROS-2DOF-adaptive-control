@@ -1,5 +1,5 @@
 % Custom Gains
-Kr = 1;
+Kr = 2;
 Kv = 1;
 Kp = 0.1;
 gamma = 1*eye(5);
@@ -15,9 +15,9 @@ l1 = 1;
 l2 = 1;
 Izz1 = 1;
 Izz2 = 1;
-Theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2; m1*l1 + m2*l1; m2*l2]; % Double checked!
+theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2; m1*l1 + m2*l1; m2*l2]; % Double checked!
 
-Theta_hat_data = [];
+theta_hat_data = [];
 e_robot_data = [];
 ed_robot_data = [];
 
@@ -35,9 +35,9 @@ for i=1:length(trajTimes)
 
     % Compute control torques
     Phi = GetPhi(q_robot, qd_robot, qrd, qrdd);
-    tau = Phi*Theta_hat + Kr*r_robot;
+    tau = Phi*theta_hat + Kr*r_robot;
     
-    % Update the robot state variables
+    % Apply Torque to robot and update the robot state variables
     [M, Vm, G] = getRobotDynamics(q_robot, qd_robot);
     qdd_robot = -1*(M\(Vm*qd_robot + G - tau));
     qd_robot = qd_robot + qdd_robot*timeStep;
@@ -46,15 +46,18 @@ for i=1:length(trajTimes)
     % Recompute r and Phi (because the robot state changed)
     e_robot = qt(:,i) - q_robot;
     qrd = qtd(:,i) + Kp*e_robot;
+    ed_robot = qtd(:,i) - qd_robot;
+    qrdd = qtdd(:,i) + Kv*ed_robot;
     r_robot = qrd - qtd(:,i);
+
     Phi = GetPhi(q_robot, qd_robot, qrd, qrdd);
 
     % Update the adapted parameters
-    theta_d_hat = gamma*Phi'*r_robot;
-    Theta_hat = Theta_hat + theta_d_hat*timeStep;
+    theta_hat_d = gamma*Phi'*r_robot;
+    theta_hat = theta_hat + theta_hat_d*timeStep;
 
     % Save
-    Theta_hat_data = [Theta_hat_data Theta_hat];
+    theta_hat_data = [theta_hat_data theta_hat];
     e_robot_data = [e_robot_data e_robot];
     ed_robot_data = [ed_robot_data ed_robot];
 
@@ -77,7 +80,7 @@ ylabel('velocity error')
 
 figure
 title('Parameter Convergence')
-plot(trajTimes,Theta_hat_data)
+plot(trajTimes,theta_hat_data)
 
 xlabel('time')
 
