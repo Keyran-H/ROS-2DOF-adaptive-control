@@ -3,6 +3,15 @@
 #include <pluginlib/class_list_macros.h>
 #include <std_msgs/Float64.h>
 #include <fstream>
+#include <Eigen/Core>
+
+// % Initial Estimates
+#define m1 2
+#define m2 2
+#define l1 2
+#define l2 2
+#define Izz1 2
+#define Izz2 2
 
 namespace adaptive_controller_ns
 {
@@ -12,7 +21,7 @@ namespace adaptive_controller_ns
         {
             // Read from the csv file
             std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/trajectory_test.csv");
-            std::vector<std::vector<double>> trajectory = loadTrajectory(file);
+            trajectory = loadTrajectory(file);
             ROS_INFO("Trajectory points detected: %ld", trajectory.size());
 
             // Get the joint names
@@ -32,20 +41,66 @@ namespace adaptive_controller_ns
             
             ROS_INFO("Initialisation complete!");
             prev_time = ros::Time::now();
+
+            // Eigen::MatrixXd theta_hat(5,1);
+            theta_hat(0,0) = m1*pow(l1,2) + m2*pow(l1,2) + m2*pow(l2,2) + Izz1 + Izz2;
+            theta_hat(1,0) = m2*l1*l2;
+            theta_hat(2,0) = m2*pow(l2,2) + Izz2;
+            theta_hat(3,0) = m1*l1 + m2*l1;
+            theta_hat(4,0) = m2*l2;
+
+            // std::cout  << "(" << theta_hat.rows() << ", " << theta_hat.cols() << ")";
+            // std::cout << "\n" << theta_hat << "\n";
+
             return true;
         }
 
+        // TODO: Figure out exactly what these arguments mean
         void update(const ros::Time& time, const ros::Duration& period)
         {
+
+            
             ros::Time curr_time = ros::Time::now();
-            ros::Duration duration = curr_time - prev_time;
-            ROS_INFO("Elapsed sec: %f", duration.toSec());
+            ros::Duration duration = time - prev_time;
+            // ROS_INFO("Elapsed sec: %f", duration.toSec());
+            // ROS_INFO("Elapsed sec: %f", duration.toSec());
+            
+            // Compute errors
+            
+            
+            
             prev_time = ros::Time::now();
         }
 
         void starting(const ros::Time& time) { }
         void stopping(const ros::Time& time) { }
 
+        void getPhi()
+        {
+            // Make the state variables
+            Eigen::MatrixXd q_robot(2,1);
+            q_robot(0,0) = joints_[1].getPosition();
+            q_robot(1,0) = joints_[2].getPosition();
+
+            Eigen::MatrixXd qd_robot(2,1);
+            qd_robot(0,0) = joints_[1].getVelocity();
+            qd_robot(1,0) = joints_[2].getVelocity();
+
+            
+            Eigen::MatrixXd Phi(2,5);
+            Phi(0,1) = 1;
+            Phi(0,2) = 1;
+            Phi(0,3) = 1;
+            Phi(0,4) = 1;
+            Phi(0,5) = 1;
+            Phi(1,1) = 1;
+            Phi(1,2) = 1;
+            Phi(1,3) = 1;
+            Phi(1,4) = 1;
+            Phi(1,5) = 1; 
+            return;
+        }
+        
         std::vector<std::vector<double>> loadTrajectory(std::istream& str)
         {
             const char delim = ',';
@@ -69,12 +124,20 @@ namespace adaptive_controller_ns
             return trajectory;
         }
 
+        public:
+            AdaptiveController() : theta_hat(5,1){ 
+                
+            }
+        
         private:
             hardware_interface::JointHandle joints_[2];
             double gain_;
             double command_[2];
             ros::Subscriber sub_command_;
             ros::Time prev_time;
+            std::vector<std::vector<double>> trajectory;
+            Eigen::MatrixXd theta_hat;
+            unsigned int traj_idx = 0;
 
     };
 
