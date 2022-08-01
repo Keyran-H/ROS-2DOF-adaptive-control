@@ -1,7 +1,7 @@
 % Custom Gains
-Kr = 5;
+Kr = 1;
 Kv = 1;
-Kp = 1;
+Kp = 0.1;
 gamma = 1*eye(5);
 
 % Robot State variables
@@ -9,17 +9,20 @@ q_robot = [0;0];
 qd_robot = [0;0];
 
 % Initial Estimates
-m1 = 2;
-m2 = 2;
-l1 = 2;
-l2 = 2;
-Izz1 = 2;
-Izz2 = 2;
+m1 = 1;
+m2 = 1;
+l1 = 1;
+l2 = 1;
+Izz1 = 1;
+Izz2 = 1;
 Theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2; m1*l1 + m2*l1; m2*l2]; % Double checked!
 
 Theta_hat_data = [];
 e_robot_data = [];
 ed_robot_data = [];
+
+% Debug
+qdd_robot_debug = [];
 
 for i=1:length(trajTimes)
 
@@ -31,14 +34,20 @@ for i=1:length(trajTimes)
     r_robot = qrd - qtd(:,i);
 
     % Compute control torques
-    Phi = getPhi(q_robot(1,1), q_robot(2,1), qd_robot(1,1), qd_robot(2,1), qrd(1,1), qrd(2,1), qrdd(1,1), qrdd(2,1));
+    Phi = GetPhi(q_robot, qd_robot, qrd, qrdd);
     tau = Phi*Theta_hat + Kr*r_robot;
     
     % Update the robot state variables
     [M, Vm, G] = getRobotDynamics(q_robot, qd_robot);
-    qdd_robot = -1*M\(Vm*qd_robot + G - tau);
+    qdd_robot = -1*(M\(Vm*qd_robot + G - tau));
     qd_robot = qd_robot + qdd_robot*timeStep;
     q_robot = q_robot + qd_robot*timeStep;
+
+    % Recompute r and Phi (because the robot state changed)
+    e_robot = qt(:,i) - q_robot;
+    qrd = qtd(:,i) + Kp*e_robot;
+    r_robot = qrd - qtd(:,i);
+    Phi = GetPhi(q_robot, qd_robot, qrd, qrdd);
 
     % Update the adapted parameters
     theta_d_hat = gamma*Phi'*r_robot;
@@ -48,6 +57,8 @@ for i=1:length(trajTimes)
     Theta_hat_data = [Theta_hat_data Theta_hat];
     e_robot_data = [e_robot_data e_robot];
     ed_robot_data = [ed_robot_data ed_robot];
+
+    qdd_robot_debug = [qdd_robot_debug qdd_robot];
 
 end
 
@@ -75,7 +86,7 @@ xlabel('time')
 function [M, Vm, G] = getRobotDynamics(q_robot, qd_robot)
     m1 = 1;
     m2 = 1;
-    l1 = 1.5;
+    l1 = 1;
     l2 = 1;
     Izz1 = 1;
     Izz2 = 1;
@@ -98,6 +109,19 @@ function phi = getPhi(q1, q2, q1d, q2d, qr1d, qr2d, qr1dd, qr2dd)
            0, qr1dd*cos(q2) + q1d*qr1d*sin(q2), qr1dd + qr2dd, 0, g_const*cos(q1 + q2)];
 end
 
-% function theta = getTheta(m1, m2, l1, l2, Izz1, Izz2)
-%     theta = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2; m1*l1 + m2*l1; m2*l2];
-% end
+function Phi = GetPhi(q_robot, qd_robot, qrd, qrdd)
+    q1 = q_robot(1,1);
+    q2 = q_robot(2,1);
+    q1d = qd_robot(1,1);
+    q2d = qd_robot(2,1);
+    qr1d = qrd(1,1);
+    qr2d = qrd(2,1);
+    qr1dd = qrdd(1,1);
+    qr2dd = qrdd(2,1);
+    g_const = 9.81;
+
+    Phi = [qr1dd, cos(q2)*(2*qr1dd + qr2dd) - sin(q2)*(q2d*qr1d + (q1d + q2d)*qr2d), qr2dd, g_const*cos(q1), g_const*cos(q1+q2); ...
+           0, qr1dd*cos(q2) + q1d*qr1d*sin(q2), qr1dd + qr2dd, 0, g_const*cos(q1 + q2)];
+
+end
+
