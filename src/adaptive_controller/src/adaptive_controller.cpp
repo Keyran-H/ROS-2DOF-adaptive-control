@@ -46,17 +46,6 @@ namespace adaptive_controller_ns
             }
             
             ROS_INFO("Initialisation complete!");
-            prev_time = ros::Time::now();
-
-            // Initialise theta_hat. TODO: See if you can move this to the constructor. It'll look neater.
-            theta_hat(0,0) = m1*pow(l1,2) + m2*pow(l1,2) + m2*pow(l2,2) + Izz1 + Izz2;
-            theta_hat(1,0) = m2*l1*l2;
-            theta_hat(2,0) = m2*pow(l2,2) + Izz2;
-            theta_hat(3,0) = m1*l1 + m2*l1;
-            theta_hat(4,0) = m2*l2;
-
-            // std::cout  << "(" << theta_hat.rows() << ", " << theta_hat.cols() << ")";
-            // std::cout << "\n" << theta_hat << "\n";
 
             return true;
         }
@@ -64,11 +53,6 @@ namespace adaptive_controller_ns
         // TODO: Figure out exactly what these arguments mean
         void update(const ros::Time& time, const ros::Duration& period)
         {
-            // ros::Time curr_time = ros::Time::now();
-            // ros::Duration duration = time - prev_time;
-            // ROS_INFO("Elapsed sec: %f", duration.toSec());
-            // ROS_INFO("Elapsed sec: %f", duration.toSec());
-
             // Make the robot state variables
             Eigen::MatrixXd q_robot(2,1);
             q_robot(0,0) = joints_[0].getPosition();
@@ -79,16 +63,15 @@ namespace adaptive_controller_ns
             qd_robot(1,0) = joints_[1].getVelocity();
 
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-
-            // Update theta_hat
-            if (traj_idx > trajectory.size() - 1)
+            
+            if (traj_idx > trajectory.size() - 1) // Stop sending commands and dump data
             {
                 joints_[0].setCommand(0); // TODO: This should be set to the last trajectory command. 
                 joints_[1].setCommand(0);
                 dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
                 return;
             } 
-            else if (traj_idx > 0)
+            else if (traj_idx > 0) // Update theta_hat
             { 
                 computeError(traj_idx - 1, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
@@ -128,7 +111,7 @@ namespace adaptive_controller_ns
 
             sim_states_debug.push_back(sim_state);
 
-            // ROS_INFO("traj_idx: %d \n", traj_idx);
+            ROS_INFO("traj_idx: %d \n", traj_idx);
             traj_idx++;
         }
 
@@ -184,19 +167,6 @@ namespace adaptive_controller_ns
             qrdd = qtdd + Kv*ed_robot;
             r_robot = qrd - qd_robot;
 
-            // std::cout << "\ncomputeError(): \n";
-            // std::cout << "q_robot: \n" << q_robot << std::endl;
-            // std::cout << "qd_robot: \n" << qd_robot << std::endl;
-            // std::cout << "qt: \n" << qt << std::endl;
-            // std::cout << "qtd: \n" << qtd << std::endl;
-            // std::cout << "qtdd: \n" << qtdd << std::endl;
-            // std::cout << "e_robot: \n" << e_robot << std::endl;
-            // std::cout << "ed_robot: \n" << ed_robot << std::endl;
-            // std::cout << "qrd: \n" << qrd << std::endl;
-            // std::cout << "qrdd: \n" << qrdd << std::endl;
-            // std::cout << "r_robot: " << r_robot << std::endl;
-            // std::cout << std::endl;
-
             return;
         }
         
@@ -245,15 +215,18 @@ namespace adaptive_controller_ns
 
         public:
             AdaptiveController() : theta_hat(5,1){ 
-
+                // Initialise theta_hat
+                theta_hat(0,0) = m1*pow(l1,2) + m2*pow(l1,2) + m2*pow(l2,2) + Izz1 + Izz2;
+                theta_hat(1,0) = m2*l1*l2;
+                theta_hat(2,0) = m2*pow(l2,2) + Izz2;
+                theta_hat(3,0) = m1*l1 + m2*l1;
+                theta_hat(4,0) = m2*l2;
             }
         
         private:
             hardware_interface::JointHandle joints_[2];
-            double gain_;
             double command_[2];
             ros::Subscriber sub_command_;
-            ros::Time prev_time;
             std::vector<std::vector<double>> trajectory;
             Eigen::MatrixXd theta_hat;
             unsigned int traj_idx = 0;
