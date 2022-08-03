@@ -14,10 +14,10 @@
 #define Izz2 1
 
 // Custom Gains
-#define Kr 0.01
-#define Kv 0.01
-#define Kp 0.01
-#define Kgamma 1
+#define Kr 0.1
+#define Kv 0.1
+#define Kp 0.1
+#define Kgamma 0.1
 
 namespace adaptive_controller_ns
 {
@@ -81,17 +81,19 @@ namespace adaptive_controller_ns
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
 
             // Update theta_hat
-            if (traj_idx >= trajectory.size() - 1)
+            if (traj_idx > trajectory.size() - 1)
             {
                 joints_[0].setCommand(0); // TODO: This should be set to the last trajectory command. 
                 joints_[1].setCommand(0);
+                dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
                 return;
-            } else if (traj_idx > 0)
+            } 
+            else if (traj_idx > 0)
             { 
                 computeError(traj_idx - 1, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
                 Eigen::MatrixXd identity5x5 = Eigen:: MatrixXd::Identity(5, 5);
-                theta_hat_d = Kgamma*identity5x5*Phi.transpose()*r_robot; // TODO: Figure out how to get the transpose. Figure out how to get a diagonal matrix
+                theta_hat_d = Kgamma*identity5x5*Phi.transpose()*r_robot;
                 theta_hat = theta_hat + theta_hat_d*period.toSec(); // NOTE: May have to do interpolation if periodicity is bad.
             }
 
@@ -102,6 +104,29 @@ namespace adaptive_controller_ns
 
             joints_[0].setCommand(tau(0,0));
             joints_[1].setCommand(tau(1,0));
+
+            std::vector<double> sim_state;
+            sim_state.push_back(time.toSec());
+            sim_state.push_back(period.toSec());
+            sim_state.push_back(q_robot(0,0));
+            sim_state.push_back(q_robot(1,0));
+            sim_state.push_back(qd_robot(0,0));
+            sim_state.push_back(qd_robot(1,0));
+            sim_state.push_back(trajectory[traj_idx][0]); // qt(0,0)
+            sim_state.push_back(trajectory[traj_idx][1]); // qt(1,0)
+            sim_state.push_back(trajectory[traj_idx][2]); // qtd(0,0)
+            sim_state.push_back(trajectory[traj_idx][3]); // qtd(1,0)
+            sim_state.push_back(trajectory[traj_idx][4]); // qtdd(0,0)
+            sim_state.push_back(trajectory[traj_idx][5]); // qtdd(1,0)
+            sim_state.push_back(theta_hat(0,0));
+            sim_state.push_back(theta_hat(1,0));
+            sim_state.push_back(theta_hat(2,0));
+            sim_state.push_back(theta_hat(3,0));
+            sim_state.push_back(theta_hat(4,0));
+            sim_state.push_back(tau(0,0));
+            sim_state.push_back(tau(1,0));
+
+            sim_states_debug.push_back(sim_state);
 
             ROS_INFO("traj_idx: %d \n", traj_idx);
             traj_idx++;
@@ -169,6 +194,26 @@ namespace adaptive_controller_ns
             return;
         }
         
+        void dumpData(std::vector<std::vector<double>> data, std::string fname)
+        {
+            std::ofstream myfile;
+            myfile.open (fname);
+
+            for (size_t i = 0; i < data.size(); i++)
+            {
+                for (size_t j = 0; j < data[i].size(); j++)
+                {
+                    myfile << data[i][j];
+                    if (j < data[i].size() - 1)
+                    {
+                        myfile << ", ";
+                    }
+                }
+                myfile << "\r\n";
+            }
+            myfile.close();
+        }
+        
         std::vector<std::vector<double>> loadTrajectory(std::istream& str)
         {
             const char delim = ',';
@@ -206,6 +251,9 @@ namespace adaptive_controller_ns
             std::vector<std::vector<double>> trajectory;
             Eigen::MatrixXd theta_hat;
             unsigned int traj_idx = 0;
+
+            // Debug variables
+            std::vector<std::vector<double>> sim_states_debug;
 
     };
 
