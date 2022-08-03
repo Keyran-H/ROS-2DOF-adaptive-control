@@ -1,5 +1,10 @@
+% Run trajectory_generator.m first!
+% Stable parameters:
+% timeStep = 0.01; % seconds
+% toolSpeed = 0.1; % m/s
+
 % Custom Gains
-Kr = 2;
+Kr = 1;
 Kv = 1;
 Kp = 0.1;
 gamma = 1*eye(5);
@@ -31,7 +36,7 @@ for i=1:length(trajTimes)
     qrd = qtd(:,i) + Kp*e_robot;
     ed_robot = qtd(:,i) - qd_robot;
     qrdd = qtdd(:,i) + Kv*ed_robot;
-    r_robot = qrd - qtd(:,i);
+    r_robot = qrd - qd_robot;
 
     % Compute control torques
     Phi = GetPhi(q_robot, qd_robot, qrd, qrdd);
@@ -48,7 +53,7 @@ for i=1:length(trajTimes)
     qrd = qtd(:,i) + Kp*e_robot;
     ed_robot = qtd(:,i) - qd_robot;
     qrdd = qtdd(:,i) + Kv*ed_robot;
-    r_robot = qrd - qtd(:,i);
+    r_robot = qrd - qd_robot;
 
     Phi = GetPhi(q_robot, qd_robot, qrd, qrdd);
 
@@ -84,8 +89,6 @@ plot(trajTimes,theta_hat_data)
 
 xlabel('time')
 
-
-
 function [M, Vm, G] = getRobotDynamics(q_robot, qd_robot)
     m1 = 1;
     m2 = 1;
@@ -104,12 +107,6 @@ function [M, Vm, G] = getRobotDynamics(q_robot, qd_robot)
 
     G = [g_const*(m1*l1 + m2*l1)*cos(q_robot(1,1)) + m2*l2*g_const*cos(q_robot(1,1) + q_robot(2,1));...
          m2*l2*g_const*cos(q_robot(1,1) + q_robot(2,1))];
-end
-
-function phi = getPhi(q1, q2, q1d, q2d, qr1d, qr2d, qr1dd, qr2dd)
-    g_const = 9.81;
-    phi = [qr1dd, cos(q2)*(2*qr1dd + qr2dd) - sin(q2)*(q2d*qr1d + (q1d + q2d)*qr2d), qr2dd, g_const*cos(q1), g_const*cos(q1+q2); ...
-           0, qr1dd*cos(q2) + q1d*qr1d*sin(q2), qr1dd + qr2dd, 0, g_const*cos(q1 + q2)];
 end
 
 function Phi = GetPhi(q_robot, qd_robot, qrd, qrdd)
