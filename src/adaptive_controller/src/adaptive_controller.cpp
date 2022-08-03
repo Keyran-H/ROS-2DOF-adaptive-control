@@ -13,11 +13,11 @@
 #define Izz1 1
 #define Izz2 1
 
-// Custom Gains
-#define Kr 0.1
-#define Kv 0.1
-#define Kp 0.1
-#define Kgamma 0.1
+// // Custom Gains
+// #define Kr 10.0
+// #define Kv 0.01
+// #define Kp 0.1
+// #define Kgamma 0.1
 
 namespace adaptive_controller_ns
 {
@@ -44,7 +44,12 @@ namespace adaptive_controller_ns
                 joints_[i] = hw->getHandle(joint_names[i]);
                 command_[i] = joints_[i].getPosition();
             }
-            
+
+            n.getParam("gains/Kgamma", Kgamma);
+            n.getParam("gains/Kr", Kr);
+            n.getParam("gains/Kp", Kp);
+            n.getParam("gains/Kv", Kv);
+
             ROS_INFO("Initialisation complete!");
 
             return true;
@@ -66,8 +71,8 @@ namespace adaptive_controller_ns
             
             if (traj_idx > trajectory.size() - 1) // Stop sending commands and dump data
             {
-                joints_[0].setCommand(0); // TODO: This should be set to the last trajectory command. 
-                joints_[1].setCommand(0);
+                joints_[0].setCommand(tau_prev(0,0));
+                joints_[1].setCommand(tau_prev(1,0));
                 dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
                 return;
             } 
@@ -112,6 +117,7 @@ namespace adaptive_controller_ns
             sim_states_debug.push_back(sim_state);
 
             ROS_INFO("traj_idx: %d \n", traj_idx);
+            tau_prev = tau;
             traj_idx++;
         }
 
@@ -230,6 +236,8 @@ namespace adaptive_controller_ns
             std::vector<std::vector<double>> trajectory;
             Eigen::MatrixXd theta_hat;
             unsigned int traj_idx = 0;
+            Eigen::MatrixXd tau_prev;
+            double Kr, Kv, Kp, Kgamma;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
