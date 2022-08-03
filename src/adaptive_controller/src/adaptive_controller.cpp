@@ -128,7 +128,7 @@ namespace adaptive_controller_ns
 
             sim_states_debug.push_back(sim_state);
 
-            ROS_INFO("traj_idx: %d \n", traj_idx);
+            // ROS_INFO("traj_idx: %d \n", traj_idx);
             traj_idx++;
         }
 
@@ -180,16 +180,22 @@ namespace adaptive_controller_ns
             Eigen::MatrixXd e_robot = qt - q_robot;
             Eigen::MatrixXd ed_robot = qtd - qd_robot;
 
-            qrd = qtd - Kp*e_robot;
-            qrdd = qtdd - Kv*ed_robot;
-            r_robot = qrd - qtd;
+            qrd = qtd + Kp*e_robot;
+            qrdd = qtdd + Kv*ed_robot;
+            r_robot = qrd - qd_robot;
 
-            // std::cout << "e_robot: \n" << e_robot << std::endl;
+            // std::cout << "\ncomputeError(): \n";
             // std::cout << "q_robot: \n" << q_robot << std::endl;
+            // std::cout << "qd_robot: \n" << qd_robot << std::endl;
             // std::cout << "qt: \n" << qt << std::endl;
-            // std::cout << "qrd: \n" << qrd << std::endl; //0.178867004605923,0.189288384507609
+            // std::cout << "qtd: \n" << qtd << std::endl;
+            // std::cout << "qtdd: \n" << qtdd << std::endl;
+            // std::cout << "e_robot: \n" << e_robot << std::endl;
+            // std::cout << "ed_robot: \n" << ed_robot << std::endl;
+            // std::cout << "qrd: \n" << qrd << std::endl;
             // std::cout << "qrdd: \n" << qrdd << std::endl;
-            // std::cout << "robot: \n" << r_robot << std::endl;
+            // std::cout << "r_robot: " << r_robot << std::endl;
+            // std::cout << std::endl;
 
             return;
         }
