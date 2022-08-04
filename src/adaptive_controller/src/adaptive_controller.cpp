@@ -19,6 +19,16 @@
 // #define Kp 0.1
 // #define Kgamma 0.1
 
+/*
+TO launch this controller
+    roslaunch ros_experimenting sim.launch
+    rosrun gazebo_ros spawn_model -file planar_RR_robot.urdf -urdf -z 1 -model planar_RR_robot
+    roslaunch adaptive_controller/launch/adaptive_controller.launch
+
+OR
+    roslaunch adaptive_controller planar_RR__robot_sim.launch
+*/
+
 namespace adaptive_controller_ns
 {
     class AdaptiveController : public controller_interface::Controller<hardware_interface::EffortJointInterface>
