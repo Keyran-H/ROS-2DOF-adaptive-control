@@ -36,7 +36,7 @@ namespace adaptive_controller_ns
         bool init(hardware_interface::EffortJointInterface* hw, ros::NodeHandle &n)
         {
             // Read from the csv file
-            std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/trajectory_test_100Hz.csv");
+            std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trajectory_test_100Hz.csv");
             trajectory = loadTrajectory(file);
             ROS_INFO("Trajectory points detected: %ld", trajectory.size());
 
@@ -87,7 +87,7 @@ namespace adaptive_controller_ns
                 if (!isDataDumped)
                 {
                     dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
-                    ROS_INFO("Data has been dumped"); // Add the location of dump
+                    ROS_INFO("CSV File created"); // Add the location of dump
                     isDataDumped = !isDataDumped;
                 }
                 return;
