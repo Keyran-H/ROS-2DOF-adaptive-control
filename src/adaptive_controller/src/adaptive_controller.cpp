@@ -73,9 +73,15 @@ namespace adaptive_controller_ns
             {
                 joints_[0].setCommand(tau_prev(0,0));
                 joints_[1].setCommand(tau_prev(1,0));
-                dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
+                
+                if (!isDataDumped)
+                {
+                    dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
+                    ROS_INFO("Data has been dumped"); // Add the location of dump
+                    isDataDumped = !isDataDumped;
+                }
                 return;
-            } 
+            }
             else if (traj_idx > 0) // Update theta_hat
             { 
                 computeError(traj_idx - 1, q_robot, qd_robot, qrd, qrdd, r_robot);
@@ -116,7 +122,7 @@ namespace adaptive_controller_ns
 
             sim_states_debug.push_back(sim_state);
 
-            ROS_INFO("traj_idx: %d \n", traj_idx);
+            // ROS_INFO("traj_idx: %d \n", traj_idx);
             tau_prev = tau;
             traj_idx++;
         }
@@ -241,6 +247,7 @@ namespace adaptive_controller_ns
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
+            bool isDataDumped = false;
 
     };
 

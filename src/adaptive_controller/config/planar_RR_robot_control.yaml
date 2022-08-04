@@ -2,7 +2,7 @@ planar_RR_robot:
   # Publish all joint states -----------
   joint_state_controller:
     type: joint_state_controller/JointStateController
-    publish_rate: 50
+    publish_rate: 100
   
   # Position Controller -----------
   planar_RR_joint_controller:
@@ -10,3 +10,8 @@ planar_RR_robot:
     joints: 
       - planar_RR_joint1
       - planar_RR_joint2
+    gains:
+      Kr: 5
+      Kv: 0.5
+      Kp: 1.5
+      Kgamma: 10
