@@ -1,6 +1,6 @@
 %%% CSV Stuff %%%
-data = horzcat(q', qd', qdd');
-writematrix(data, "trajectory_test.csv");
+data = horzcat(qt', qtd', qtdd');
+writematrix(data, "trajectory_test_100Hz.csv");
 
 
 % traj_msg = rosmessage('trajectory_msgs/JointTrajectory');

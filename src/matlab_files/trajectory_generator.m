@@ -3,7 +3,7 @@ robot = importrobot("/home/kiran/dissertation/ros_experimenting_ws/src/ros_exper
 endEffector = "planar_RR_link3";
 timeStep = 0.01; % seconds
 toolSpeed = 0.1; % m/s
-showTrajectory = true;
+showTrajectory = false;
 
 
 currentRobotJConfig = homeConfiguration(robot);
@@ -39,18 +39,17 @@ end
 jointNames = ["planar_RR_joint1","planar_RR_joint2"]; % TODO: Do this programattically
 % Generate the trajectory
 ctrlpoints = [jointInitPos',jointFinalPos'];
-[q,qd,qdd,pp] = cubicpolytraj(ctrlpoints,timeInterval,trajTimes);
+[qt,qtd,qtdd,pp] = cubicpolytraj(ctrlpoints,timeInterval,trajTimes);
 % [q,qd,qdd,pp] = bsplinepolytraj(jointConfigArray,timeInterval,1); % TODO:
 % Use this if more than 2DOF are used.
 
-% Return to initial configuration
-show(robot,currentRobotJConfig,'PreservePlot',false,'Frames','off');
-hold on
-
 if showTrajectory
+    % Return to initial configuration
+    show(robot,currentRobotJConfig,'PreservePlot',false,'Frames','off');
+    hold on
     for i=1:length(trajTimes)
         for j=1:numJoints
-            configNow(j).JointPosition = q(j,i);% 1x2 matrix
+            configNow(j).JointPosition = qt(j,i);% 1x2 matrix
             configNow(j).JointName = jointNames(j);
         end
     
@@ -59,7 +58,7 @@ if showTrajectory
         taskSpaceMarker = plot3(poseNow(1,4),poseNow(2,4),poseNow(3,4),'b.','MarkerSize',20);
         drawnow;
     end
+    % Add a legend and title
+    title('Manipulator Trajectories')
 end
 
-% Add a legend and title
-title('Manipulator Trajectories')
