@@ -1,0 +1,17 @@
+BERT2_robot:
+  # Publish all joint states -----------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 100
+  
+  # Position Controller -----------
+  BERT2_joint_controller:
+    type: novel_adaptive_controller/NovelAdaptiveController
+    joints: 
+      - BERT2_joint1
+      - BERT2_joint2
+    gains:
+      Kr: 0.1
+      Kv: 0.1
+      Kp: 0.1
+      Kgamma: 0.1
