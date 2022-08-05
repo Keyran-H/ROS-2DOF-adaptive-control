@@ -6,12 +6,12 @@
 #include <Eigen/Core>
 
 // Initial Estimates
-#define m1 1
-#define m2 1
-#define l1 1
-#define l2 1
-#define Izz1 1
-#define Izz2 1
+#define m1 2.35
+#define m2 3.0
+#define l1 0.2735
+#define l2 0.44
+#define Izz1 0.0029375
+#define Izz2 0.00375
 
 /*
 TO launch this controller
