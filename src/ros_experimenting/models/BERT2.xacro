@@ -79,9 +79,9 @@
             <origin xyz="0 0 ${link1_length/2 - axel_offset}" rpy="0 0 0"/>
             <mass value="${link1_mass}"/>
             <inertia
-                ixx="${link1_mass / 12.0 * (width*width + height2*height2)}" ixy="0.0" ixz="0.0"
-                iyy="${link1_mass / 12.0 * (height2*height2 + width*width)}" iyz="0.0"
-                izz="${link1_mass / 12.0 * (width*width + width*width)}"/>
+                ixx="${link1_mass / 12.0 * (3*link1_radius*link1_radius + link1_length*link1_length)}" ixy="0.0" ixz="0.0"
+                iyy="${link1_mass / 12.0 * (3*link1_radius*link1_radius + link1_length*link1_length)}" iyz="0.0"
+                izz="${link1_mass / 2.0 * (link1_radius*link1_radius)}"/>
         </inertial>
     </link>
 
@@ -114,9 +114,9 @@
             <origin xyz="0 0 ${link2_length/2 - axel_offset}" rpy="0 0 0"/>
             <mass value="${link2_mass}"/>
             <inertia
-                ixx="${link2_mass / 12.0 * (width*width + height3*height3)}" ixy="0.0" ixz="0.0"
-                iyy="${link2_mass / 12.0 * (height3*height3 + width*width)}" iyz="0.0"
-                izz="${link2_mass / 12.0 * (width*width + width*width)}"/>
+                ixx="${link2_mass / 12.0 * (3*link2_radius*link2_radius + link2_length*link2_length)}" ixy="0.0" ixz="0.0"
+                iyy="${link2_mass / 12.0 * (3*link2_radius*link2_radius + link2_length*link2_length)}" iyz="0.0"
+                izz="${link2_mass / 2.0 * (link2_radius*link2_radius)}"/>
         </inertial>
     </link>
 
@@ -144,13 +144,13 @@
     </transmission>
 
     <!-- Gazebo Plugins -->
-    <!-- <gazebo>
+    <gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
             <robotNamespace>/BERT2_robot</robotNamespace>
             <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
             <controlPeriod>0.01</controlPeriod>
         </plugin>
-    </gazebo> -->
+    </gazebo>
 
     <!-- Additional Configs -->
     <gazebo reference="BERT2_baselink">
