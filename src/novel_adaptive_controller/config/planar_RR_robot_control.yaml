@@ -6,12 +6,12 @@ planar_RR_robot:
   
   # Position Controller -----------
   planar_RR_joint_controller:
-    type: adaptive_controller/AdaptiveController
+    type: novel_adaptive_controller/NovelAdaptiveController
     joints: 
       - planar_RR_joint1
       - planar_RR_joint2
     gains:
-      Kr: 5
-      Kv: 0.5
-      Kp: 1.5
-      Kgamma: 10
+      Kr: 0.1
+      Kv: 0.1
+      Kp: 0.1
+      Kgamma: 0.1

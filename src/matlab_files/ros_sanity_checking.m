@@ -1,13 +1,14 @@
 clear
 close all
-sim_states = readtable("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
+% sim_states = readtable("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
+sim_states = readtable("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/novel_adaptive_data.csv");
 sim_states = table2array(sim_states);
 
 % Custom Gains. REMEMBER TO DOUBLE CHECK THIS
-Kr = 1;
-Kv = 1;
-Kp = 1;
-gamma = 1*eye(5);
+Kr = 0.1;
+Kv = 0.1;
+Kp = 0.1;
+gamma = 0.1*eye(5);
 
 % Initial Estimates
 m1 = 1;
@@ -62,6 +63,25 @@ for i=1:sim_iterations(1)
     etau_robot_data = [etau_robot_data etau];
 
 end
+
+
+figure
+title('Joint 1 trajectory, desired vs actual')
+plot(sim_states(:,1),sim_states(:,3))
+hold on
+plot(sim_states(:,1),sim_states(:,7))
+xlabel('time')
+ylabel('position')
+legend('actual', 'desired')
+
+figure
+title('Joint 2 trajectory, desired vs actual')
+plot(sim_states(:,1),sim_states(:,4))
+hold on
+plot(sim_states(:,1),sim_states(:,8))
+xlabel('time')
+ylabel('position')
+legend('actual', 'desired')
 
 figure
 title('Position Error')

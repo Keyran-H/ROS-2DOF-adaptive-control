@@ -29,11 +29,6 @@ namespace novel_adaptive_controller_ns
     {
         bool init(hardware_interface::EffortJointInterface* hw, ros::NodeHandle &n)
         {
-            // Read from the csv file
-            std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trajectory_test_100Hz.csv");
-            trajectory = loadTrajectory(file);
-            ROS_INFO("Trajectory points detected: %ld", trajectory.size());
-
             // Get the joint names
             std::vector<std::string> joint_names;
             if(!n.getParam("joints", joint_names) || joint_names.size() != 2)
@@ -71,24 +66,34 @@ namespace novel_adaptive_controller_ns
             qd_robot(0,0) = joints_[0].getVelocity();
             qd_robot(1,0) = joints_[1].getVelocity();
 
+            double t = elapsed_time; // TODO: just use directly 
+            Eigen::MatrixXd qt_qtd_qtdd(6,1);
+            // qt_qtd_qtdd(0,0) = 20 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12);
+            // qt_qtd_qtdd(1,0) = 24 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12);
+            qt_qtd_qtdd(0,0) = 17.4534 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12);
+            qt_qtd_qtdd(1,0) = 0.8189 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12);
+            qt_qtd_qtdd(2,0) = cos(t/10 + 2)/10 + (16*cos(t/5 + 10))/5 + (27*cos((3*t)/10 + 12))/5;
+            qt_qtd_qtdd(3,0) = (8*cos(t/5 + 2))/5 + (9*cos((3*t)/10 + 10))/5 + (81*cos((9*t)/25 + 12))/25;
+            qt_qtd_qtdd(4,0) = sin(t/10 + 2)/100 - (16*sin(t/5 + 10))/25 - (81*sin((3*t)/10 + 12))/50;
+            qt_qtd_qtdd(5,0) = (8*sin(t/5 + 2))/25 - (27*sin((3*t)/10 + 10))/50 - (729*sin((9*t)/25 + 12))/625;
+
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-            
-            if (traj_idx > trajectory.size() - 1) // Stop sending commands and dump data
+            if (elapsed_time > 10.0) // Stop sending commands and dump data
             {
                 joints_[0].setCommand(tau_prev(0,0));
                 joints_[1].setCommand(tau_prev(1,0));
                 
                 if (!isDataDumped)
                 {
-                    dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
+                    dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/novel_adaptive_data.csv");
                     ROS_INFO("CSV File created"); // Add the location of dump
                     isDataDumped = !isDataDumped;
                 }
                 return;
             }
-            else if (traj_idx > 0) // Update theta_hat
-            { 
-                computeError(traj_idx - 1, q_robot, qd_robot, qrd, qrdd, r_robot);
+            else if (elapsed_time > 0) // Update theta_hat
+            {
+                computeError(qt_qtd_qtdd_prev, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
                 Eigen::MatrixXd identity5x5 = Eigen:: MatrixXd::Identity(5, 5);
                 theta_hat_d = Kgamma*identity5x5*Phi.transpose()*r_robot;
@@ -96,7 +101,7 @@ namespace novel_adaptive_controller_ns
             }
 
             // Compute the control torque
-            computeError(traj_idx, q_robot, qd_robot, qrd, qrdd, r_robot);
+            computeError(qt_qtd_qtdd, q_robot, qd_robot, qrd, qrdd, r_robot);
             Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd);
             Eigen::MatrixXd tau = Phi*theta_hat + Kr*r_robot;
 
@@ -110,12 +115,12 @@ namespace novel_adaptive_controller_ns
             sim_state.push_back(q_robot(1,0));
             sim_state.push_back(qd_robot(0,0));
             sim_state.push_back(qd_robot(1,0));
-            sim_state.push_back(trajectory[traj_idx][0]); // qt(0,0)
-            sim_state.push_back(trajectory[traj_idx][1]); // qt(1,0)
-            sim_state.push_back(trajectory[traj_idx][2]); // qtd(0,0)
-            sim_state.push_back(trajectory[traj_idx][3]); // qtd(1,0)
-            sim_state.push_back(trajectory[traj_idx][4]); // qtdd(0,0)
-            sim_state.push_back(trajectory[traj_idx][5]); // qtdd(1,0)
+            sim_state.push_back(qt_qtd_qtdd(0,0)); // qt(0,0)
+            sim_state.push_back(qt_qtd_qtdd(1,0)); // qt(1,0)
+            sim_state.push_back(qt_qtd_qtdd(2,0)); // qtd(0,0)
+            sim_state.push_back(qt_qtd_qtdd(3,0)); // qtd(1,0)
+            sim_state.push_back(qt_qtd_qtdd(4,0)); // qtdd(0,0)
+            sim_state.push_back(qt_qtd_qtdd(5,0)); // qtdd(1,0)
             sim_state.push_back(theta_hat(0,0));
             sim_state.push_back(theta_hat(1,0));
             sim_state.push_back(theta_hat(2,0));
@@ -126,9 +131,12 @@ namespace novel_adaptive_controller_ns
 
             sim_states_debug.push_back(sim_state);
 
-            // ROS_INFO("traj_idx: %d \n", traj_idx);
+            std::cout << elapsed_time;
+            std::cout << std::endl;
+            // ROS_INFO("CP"); // Add the location of dump
             tau_prev = tau;
-            traj_idx++;
+            elapsed_time += period.toSec();
+            qt_qtd_qtdd_prev = qt_qtd_qtdd;
         }
 
         void starting(const ros::Time& time) { }
@@ -162,19 +170,19 @@ namespace novel_adaptive_controller_ns
             return Phi;
         }
         
-        void computeError(unsigned int idx, Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot, Eigen::MatrixXd& qrd, Eigen::MatrixXd& qrdd, Eigen::MatrixXd& r_robot)
+        void computeError(Eigen::MatrixXd qt_qtd_qtdd, Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot, Eigen::MatrixXd& qrd, Eigen::MatrixXd& qrdd, Eigen::MatrixXd& r_robot)
         {
             Eigen::MatrixXd qt(2,1);
-            qt(0,0) = trajectory[idx][0];
-            qt(1,0) = trajectory[idx][1];
+            qt(0,0) = qt_qtd_qtdd(0,0);
+            qt(1,0) = qt_qtd_qtdd(1,0);
            
             Eigen::MatrixXd qtd(2,1);
-            qtd(0,0) = trajectory[idx][2];
-            qtd(1,0) = trajectory[idx][3];
+            qtd(0,0) = qt_qtd_qtdd(2,0);
+            qtd(1,0) = qt_qtd_qtdd(3,0);
 
             Eigen::MatrixXd qtdd(2,1);
-            qtdd(0,0) = trajectory[idx][4];
-            qtdd(1,0) = trajectory[idx][5];
+            qtdd(0,0) = qt_qtd_qtdd(4,0);
+            qtdd(1,0) = qt_qtd_qtdd(5,0);
 
             Eigen::MatrixXd e_robot = qt - q_robot;
             Eigen::MatrixXd ed_robot = qtd - qd_robot;
@@ -205,29 +213,6 @@ namespace novel_adaptive_controller_ns
             }
             myfile.close();
         }
-        
-        std::vector<std::vector<double>> loadTrajectory(std::istream& str)
-        {
-            const char delim = ',';
-            std::vector<std::vector<double>> trajectory;
-            std::string line;    
-
-            while(std::getline(str,line))
-            {
-                std::vector<double> trajectory_pt;
-                std::stringstream  ss(line);
-                std::string cell;
-
-                while (std::getline(ss, cell, delim)) 
-                {
-                    double cell_double = atof(cell.c_str());
-                    trajectory_pt.push_back(cell_double);
-                }
-                trajectory.push_back(trajectory_pt);
-            }
-
-            return trajectory;
-        }
 
         public:
             NovelAdaptiveController() : theta_hat(5,1){ 
@@ -243,11 +228,11 @@ namespace novel_adaptive_controller_ns
             hardware_interface::JointHandle joints_[2];
             double command_[2];
             ros::Subscriber sub_command_;
-            std::vector<std::vector<double>> trajectory;
             Eigen::MatrixXd theta_hat;
-            unsigned int traj_idx = 0;
             Eigen::MatrixXd tau_prev;
             double Kr, Kv, Kp, Kgamma;
+            double elapsed_time = 0;
+            Eigen::MatrixXd qt_qtd_qtdd_prev;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
