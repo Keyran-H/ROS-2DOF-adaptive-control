@@ -3,8 +3,7 @@
 
     <!-- Constants for robot dimensions -->
     <xacro:property name="PI" value="3.1415926535897931"/>
-    <xacro:property name="link1_mass" value="2.35" />
-    <xacro:property name="link2_mass" value="3.0" />
+    <xacro:property name="mass" value="2.35" />
     <xacro:property name="width" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
     <xacro:property name="height1" value="2" /> <!-- Link 1 -->
     <xacro:property name="height2" value="1" /> <!-- Link 2 -->
@@ -35,11 +34,11 @@
         </visual>
         <inertial>
             <origin xyz="0 0 ${height1/2}" rpy="0 0 0"/>
-            <link1_mass value="${link1_mass}"/>
+            <mass value="${mass}"/>
             <inertia
-                ixx="${link1_mass / 12.0 * (width*width + height1*height1)}" ixy="0.0" ixz="0.0"
-                iyy="${link1_mass / 12.0 * (height1*height1 + width*width)}" iyz="0.0"
-                izz="${link1_mass / 12.0 * (width*width + width*width)}"/>
+                ixx="${mass / 12.0 * (width*width + height1*height1)}" ixy="0.0" ixz="0.0"
+                iyy="${mass / 12.0 * (height1*height1 + width*width)}" iyz="0.0"
+                izz="${mass / 12.0 * (width*width + width*width)}"/>
         </inertial>
     </link>
 
@@ -70,11 +69,11 @@
 
         <inertial>
             <origin xyz="0 0 ${height2/2 - axel_offset}" rpy="0 0 0"/>
-            <link1_mass value="${link1_mass}"/>
+            <mass value="${mass}"/>
             <inertia
-                ixx="${link1_mass / 12.0 * (width*width + height2*height2)}" ixy="0.0" ixz="0.0"
-                iyy="${link1_mass / 12.0 * (height2*height2 + width*width)}" iyz="0.0"
-                izz="${link1_mass / 12.0 * (width*width + width*width)}"/>
+                ixx="${mass / 12.0 * (width*width + height2*height2)}" ixy="0.0" ixz="0.0"
+                iyy="${mass / 12.0 * (height2*height2 + width*width)}" iyz="0.0"
+                izz="${mass / 12.0 * (width*width + width*width)}"/>
         </inertial>
     </link>
 
@@ -105,11 +104,11 @@
 
         <inertial>
             <origin xyz="0 0 ${height3/2 - axel_offset}" rpy="0 0 0"/>
-            <link1_mass value="${link1_mass}"/>
+            <mass value="${mass}"/>
             <inertia
-                ixx="${link1_mass / 12.0 * (width*width + height3*height3)}" ixy="0.0" ixz="0.0"
-                iyy="${link1_mass / 12.0 * (height3*height3 + width*width)}" iyz="0.0"
-                izz="${link1_mass / 12.0 * (width*width + width*width)}"/>
+                ixx="${mass / 12.0 * (width*width + height3*height3)}" ixy="0.0" ixz="0.0"
+                iyy="${mass / 12.0 * (height3*height3 + width*width)}" iyz="0.0"
+                izz="${mass / 12.0 * (width*width + width*width)}"/>
         </inertial>
     </link>
 
