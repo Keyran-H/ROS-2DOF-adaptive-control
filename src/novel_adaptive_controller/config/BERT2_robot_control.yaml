@@ -11,7 +11,7 @@ BERT2_robot:
       - BERT2_joint1
       - BERT2_joint2
     gains:
-      Kr: 0.1
-      Kv: 0.1
-      Kp: 0.1
-      Kgamma: 0.1
+      Kr: 1
+      Kv: 0.5
+      Kp: 0.5
+      Kgamma: 1

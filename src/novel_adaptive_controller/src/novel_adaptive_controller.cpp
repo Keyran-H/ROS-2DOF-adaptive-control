@@ -70,12 +70,12 @@ namespace novel_adaptive_controller_ns
             Eigen::MatrixXd qt_qtd_qtdd(6,1);
             // qt_qtd_qtdd(0,0) = 20 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12);
             // qt_qtd_qtdd(1,0) = 24 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12);
-            qt_qtd_qtdd(0,0) = 17.4534 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12);
-            qt_qtd_qtdd(1,0) = 0.8189 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12);
-            qt_qtd_qtdd(2,0) = cos(t/10 + 2)/10 + (16*cos(t/5 + 10))/5 + (27*cos((3*t)/10 + 12))/5;
-            qt_qtd_qtdd(3,0) = (8*cos(t/5 + 2))/5 + (9*cos((3*t)/10 + 10))/5 + (81*cos((9*t)/25 + 12))/25;
-            qt_qtd_qtdd(4,0) = sin(t/10 + 2)/100 - (16*sin(t/5 + 10))/25 - (81*sin((3*t)/10 + 12))/50;
-            qt_qtd_qtdd(5,0) = (8*sin(t/5 + 2))/25 - (27*sin((3*t)/10 + 10))/50 - (729*sin((9*t)/25 + 12))/625;
+            qt_qtd_qtdd(0,0) = deg2rad(17.4534 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12));
+            qt_qtd_qtdd(1,0) = deg2rad(0.8189 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12));
+            qt_qtd_qtdd(2,0) = deg2rad(cos(t/10 + 2)/10 + (16*cos(t/5 + 10))/5 + (27*cos((3*t)/10 + 12))/5);
+            qt_qtd_qtdd(3,0) = deg2rad((8*cos(t/5 + 2))/5 + (9*cos((3*t)/10 + 10))/5 + (81*cos((9*t)/25 + 12))/25);
+            qt_qtd_qtdd(4,0) = deg2rad(sin(t/10 + 2)/100 - (16*sin(t/5 + 10))/25 - (81*sin((3*t)/10 + 12))/50);
+            qt_qtd_qtdd(5,0) = deg2rad((8*sin(t/5 + 2))/25 - (27*sin((3*t)/10 + 10))/50 - (729*sin((9*t)/25 + 12))/625);
 
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
             if (elapsed_time > 10.0) // Stop sending commands and dump data
@@ -142,6 +142,11 @@ namespace novel_adaptive_controller_ns
         void starting(const ros::Time& time) { }
         void stopping(const ros::Time& time) { }
 
+        double deg2rad(double deg)
+        {
+            return 2*M_PI*(deg/360);
+        }
+        
         Eigen::MatrixXd getPhi(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot, Eigen::MatrixXd qrd, Eigen::MatrixXd qrdd)
         {
             const double g_const = 9.81;
