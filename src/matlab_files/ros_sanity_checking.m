@@ -66,50 +66,49 @@ end
 
 
 figure
-title('Joint 1 trajectory, desired vs actual')
 plot(sim_states(:,1),sim_states(:,3))
 hold on
 plot(sim_states(:,1),sim_states(:,7))
 xlabel('time')
 ylabel('position')
 legend('actual', 'desired')
+title('Joint 1 trajectory, desired vs actual')
 
 figure
-title('Joint 2 trajectory, desired vs actual')
 plot(sim_states(:,1),sim_states(:,4))
 hold on
 plot(sim_states(:,1),sim_states(:,8))
 xlabel('time')
 ylabel('position')
 legend('actual', 'desired')
+title('Joint 2 trajectory, desired vs actual')
 
 figure
-title('Position Error')
 plot(sim_states(:,1),e_robot_data)
 xlabel('time')
 ylabel('position error')
 legend('joint1', 'joint2')
+title('Position Error')
 
 figure
-title('Velocity Errors')
 plot(sim_states(:,1),ed_robot_data)
 xlabel('time')
 ylabel('velocity error')
 legend('joint1', 'joint2')
-
+title('Velocity Errors')
 
 figure
-title('Parameter Convergence')
 plot(sim_states(:,1),theta_hat_data)
 xlabel('time')
 ylabel('Parameter')
+title('Parameter Convergence')
 
 figure
-title('Torque MATLAB and Sim mismatch')
 plot(sim_states(:,1),etau_robot_data)
 xlabel('time')
 ylabel('Torque mismatch error')
 legend('joint1', 'joint2')
+title('Torque MATLAB and Sim mismatch')
 
 
 
