@@ -1,0 +1,5 @@
+<library path="lib/libnovel_adaptive_controller_paper_lib">
+    <class name="novel_adaptive_controller_paper/NovelAdaptiveControllerPaper"
+           type="novel_adaptive_controller_paper_ns::NovelAdaptiveControllerPaper"
+           base_class_type="controller_interface::ControllerBase" />
+</library>
