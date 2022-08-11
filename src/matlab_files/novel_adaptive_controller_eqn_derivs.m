@@ -30,9 +30,7 @@ sanity_tau = fd + h1 + h2;
 real_tau = M*qdd + Vm*qd + G;
 tau_sanity = isequaln(real_tau,sanity_tau)
 
-% syms th1 th2 th3 th4 th5
-% Phi_vg = [0,(-2*q2d*q1d-q2d^2)*sin(q2),0,0,0;...
-%           0,-q2d*q1d*sin(q2),0,0,0];
+%Phi matrices
 Phi_vg = [0, -q1d*sin(q2)*q2d - q2d*sin(q2)*(q2d + q1d), 0, g*cos(q1), g*cos(q1 + q2); ...
           0, sin(q2)*q1d^2, 0, 0, g*cos(q1 + q2)];
 Phi_m2 = [0, 2*q2d*sin(q2)*q1d + q2d^2*sin(q2), 0, 0, 0;...
