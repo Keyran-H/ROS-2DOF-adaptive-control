@@ -9,7 +9,7 @@ timeStep = 0.01; % seconds
 Kr = 2;
 Kv = 5;
 Kp = 0.1;
-gamma = 1*eye(5);
+gamma = 2*eye(5);
 
 % Simulation states
 timeIntervals = 0:timeStep:simulation_time;
