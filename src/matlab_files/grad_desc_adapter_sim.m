@@ -17,13 +17,20 @@ q_robot = [-0.3046; -0.0143]; % Make the robot start at joint position 0
 qd_robot = [0;0];
 
 % Initial Estimates
-m1 = 1;
-m2 = 1;
-l1 = 1;
-l2 = 1;
-Izz1 = 1;
-Izz2 = 1;
+m1 = 0.1;
+m2 = 1.7;
+l1 = 0.3;
+l2 = 3;
+Izz1 = 4;
+Izz2 = 2;
 theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2; m1*l1 + m2*l1; m2*l2]; % Double checked!
+
+% m1 = 1;
+% m2 = 1;
+% l1 = 1;
+% l2 = 1;
+% Izz1 = 1;
+% Izz2 = 1;
 
 theta_hat_data = [];
 e_robot_data = [];
