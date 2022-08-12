@@ -48,6 +48,11 @@ namespace novel_adaptive_controller_paper_ns
             n.getParam("gains/Kr", Kr);
             n.getParam("gains/Kp", Kp);
             n.getParam("gains/Kv", Kv);
+            n.getParam("gains/Kfilt", Kfilt);
+            n.getParam("gains/Kff", Kff);
+            n.getParam("gains/Kinit", Kinit);
+            n.getParam("gains/Komega1", Komega1);
+            n.getParam("gains/Komega2", Komega2);
 
             ROS_INFO("Initialisation complete!");
 
@@ -94,11 +99,20 @@ namespace novel_adaptive_controller_paper_ns
             else if (elapsed_time > 0) // Update theta_hat
             {
                 // Get the phi matrices
+                Eigen::MatrixXd Phi_m1_curr = getPhi_m1(q_robot, qd_robot);
+                Eigen::MatrixXd Phi_m2_curr = getPhi_m2(q_robot, qd_robot);
+                Eigen::MatrixXd Phi_vg_curr = getPhi_vg(q_robot, qd_robot);
+
+                // Filter the phi matrices and tau
+                Eigen::MatrixXd Phi_m1f_curr = getFiltered(Phi_m1_curr, Phi_m1f_prev, period.toSec());
+                Eigen::MatrixXd Phi_m2f_curr = getFiltered(Phi_m2_curr, Phi_m2f_prev, period.toSec());
+                Eigen::MatrixXd Phi_vgf_curr = getFiltered(Phi_vg_curr, Phi_vgf_prev, period.toSec());
+                Eigen::MatrixXd tau_f_curr = getFiltered(tau_prev, tau_f_prev, period.toSec());
 
                 // Compute
                 computeError(qt_qtd_qtdd_prev, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
-                Eigen::MatrixXd identity5x5 = Eigen:: MatrixXd::Identity(5, 5);
+                Eigen::MatrixXd identity5x5 = Eigen::MatrixXd::Identity(5, 5);
                 theta_hat_d = Kgamma*identity5x5*Phi.transpose()*r_robot;
                 theta_hat = theta_hat + theta_hat_d*period.toSec(); // NOTE: May have to do interpolation if periodicity is bad.
             }
@@ -144,6 +158,11 @@ namespace novel_adaptive_controller_paper_ns
 
         void starting(const ros::Time& time) { }
         void stopping(const ros::Time& time) { }
+
+        Eigen::MatrixXd getFiltered(Eigen::MatrixXd curr_unfilt, Eigen::MatrixXd prev_filt, double duration)
+        {
+            return (duration*curr_unfilt + Kfilt*prev_filt)/(Kfilt + duration);
+        }
 
         Eigen::MatrixXd getPhi_vg(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
         {
@@ -294,6 +313,11 @@ namespace novel_adaptive_controller_paper_ns
                 theta_hat(2,0) = m2*pow(l2,2) + Izz2;
                 theta_hat(3,0) = m1*l1 + m2*l1;
                 theta_hat(4,0) = m2*l2;
+
+                Phi_m1f_prev = Eigen::MatrixXd::Zero(2, 5);
+                Phi_m2f_prev = Eigen::MatrixXd::Zero(2, 5);
+                Phi_vgf_prev = Eigen::MatrixXd::Zero(2, 5);
+                tau_f_prev = Eigen::MatrixXd::Zero(2, 1);
             }
         
         private:
@@ -305,6 +329,8 @@ namespace novel_adaptive_controller_paper_ns
             double Kr, Kv, Kp, Kgamma;
             double elapsed_time = 0;
             Eigen::MatrixXd qt_qtd_qtdd_prev;
+            double Kfilt, Kff, Kinit, Komega1, Komega2;
+            Eigen::MatrixXd Phi_m1f_prev, Phi_m2f_prev, Phi_vgf_prev, tau_f_prev;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
