@@ -10,19 +10,9 @@ Kr = 2;
 Kv = 5;
 Kp = 0.1;
 gamma = 1*eye(5);
-Kfilt = 0.01;
-Kff = 0.01;
-Kinit = 1;
-Komega1 = 0;
-Komega2 = 0.01;
 
 % Simulation states
 timeIntervals = 0:timeStep:simulation_time;
-Phi_m1f_prev = zeros(2,5);
-Phi_m2f_prev = zeros(2,5);
-Phi_vgf_prev = zeros(2,5);
-tau_f_prev = zeros(2,1);
-
 q_robot = [-0.3046; -0.0143]; % Make the robot start at joint position 0
 qd_robot = [0;0];
 
@@ -75,52 +65,19 @@ for i=timeIntervals
     r_robot = qrd - qd_robot;
 
     Phi = GetPhi(q_robot, qd_robot, qrd, qrdd);
-
-    % Novel Adaptive Controller Adjustment
-
-    % Get current phi matrices
-    Phi_m1_curr = GetPhi_m1(q_robot, qd_robot);
-    Phi_m2_curr = GetPhi_m2(q_robot, qd_robot);
-    Phi_vg_curr = GetPhi_vg(q_robot, qd_robot);
-
-    % Get the filtered phi and tau
-    Phi_m1f_curr = getFiltered(Phi_m1_curr, Phi_m1f_prev, Kfilt, timeStep);
-    Phi_m2f_curr = getFiltered(Phi_m2_curr, Phi_m2f_prev, Kfilt, timeStep);
-    Phi_vgf_curr = getFiltered(Phi_vg_curr, Phi_vgf_prev, Kfilt, timeStep);
-    tau_f_curr = getFiltered(tau, tau_f_prev, Kfilt, timeStep);
-
-    % Get Phi_f
-    Phi_f_curr = (Phi_m1_curr - Phi_m1f_curr)/Kfilt + Phi_m2f_curr + Phi_vgf_curr;
-
-    % Compute W(t) and N(t)
-    W_t = zeros(5,5);
-    N_t = zeros(5,1);
-    trajTimes = [trajTimes elapsed_time];
-    Phi_f_all = cat(3, Phi_f_all, Phi_f_curr);
-
-    for j = 1:length(trajTimes)
-        Phi_f_sliced = Phi_f_all(:,:,j);
-        W_t = W_t + exp(-Kff*(elapsed_time - trajTimes(j)))*Kff*(Phi_f_sliced')*Phi_f_sliced;
-        N_t = N_t + exp(-Kff*(elapsed_time - trajTimes(j)))*Kff*(Phi_f_sliced')*tau_f_curr;
-    end
-
-    W_t = W_t + exp(-Kff*elapsed_time)*Kinit*eye(5,5);
-  
+ 
     % Update the adapted parameters
-    denom = (eye(size(W_t)) + timeStep*gamma*Komega2*W_t);
-    theta_hat = denom\(theta_hat + timeStep*gamma*Phi'*r_robot + timeStep*gamma*Komega2*N_t);
-    theta_hat = theta_hat + gamma*Komega1*sign(W_t*theta_hat - N_t);
+    theta_hat_d = gamma*Phi'*r_robot;
+    theta_hat = theta_hat + theta_hat_d*timeStep;
 
     % Save
     theta_hat_data = [theta_hat_data theta_hat];
     e_robot_data = [e_robot_data e_robot];
     ed_robot_data = [ed_robot_data ed_robot];    
+    trajTimes = [trajTimes elapsed_time];
     
     % Update
     elapsed_time = elapsed_time + timeStep;
-    Phi_m1f_prev = Phi_m1f_curr;
-    Phi_m2f_prev = Phi_m2f_curr;
-    Phi_vgf_prev = Phi_vgf_curr;
     
 end
 
@@ -145,10 +102,6 @@ title('Parameter Convergence')
 plot(trajTimes,theta_hat_data)
 
 xlabel('time')
-
-function curr_phi_f = getFiltered(curr_phi, prev_phi_f, Kfilt, timeStep)
-    curr_phi_f = (timeStep*curr_phi + Kfilt*prev_phi_f)/(Kfilt + timeStep);
-end
 
 function [qt, qtd, qtdd] = getTrajectoryPt(t)
     qt = [deg2rad(sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12));... % t=0 -> -17.4534
@@ -179,37 +132,6 @@ function [M, Vm, G] = getRobotDynamics(q_robot, qd_robot)
 
     G = [g*(m1*l1 + m2*l1)*cos(q_robot(1,1)) + m2*l2*g*cos(q_robot(1,1) + q_robot(2,1));...
          m2*l2*g*cos(q_robot(1,1) + q_robot(2,1))];
-end
-
-function Phi_vg = GetPhi_vg(q_robot, qd_robot)
-    q1 = q_robot(1,1);
-    q2 = q_robot(2,1);
-    q1d = qd_robot(1,1);
-    q2d = qd_robot(2,1);
-    g = 9.81;
-
-    Phi_vg = [0, -q1d*sin(q2)*q2d - q2d*sin(q2)*(q2d + q1d), 0, g*cos(q1), g*cos(q1 + q2); ...
-          0, sin(q2)*q1d^2, 0, 0, g*cos(q1 + q2)];
-end
-
-function Phi_m1 = GetPhi_m1(q_robot, qd_robot)
-    q1 = q_robot(1,1);
-    q2 = q_robot(2,1);
-    q1d = qd_robot(1,1);
-    q2d = qd_robot(2,1);
-
-    Phi_m1 = [q1d, 2*cos(q2)*q1d + cos(q2)*q2d, q2d, 0, 0;...
-               0, cos(q2)*q1d, q1d + q2d, 0, 0];
-end
-
-function Phi_m2 = GetPhi_m2(q_robot, qd_robot)
-    q1 = q_robot(1,1);
-    q2 = q_robot(2,1);
-    q1d = qd_robot(1,1);
-    q2d = qd_robot(2,1);
-
-    Phi_m2 = [0, 2*q2d*sin(q2)*q1d + q2d^2*sin(q2), 0, 0, 0;...
-              0,  q2d*sin(q2)*q1d, 0, 0, 0];
 end
 
 function Phi = GetPhi(q_robot, qd_robot, qrd, qrdd)
