@@ -93,6 +93,9 @@ namespace novel_adaptive_controller_paper_ns
             }
             else if (elapsed_time > 0) // Update theta_hat
             {
+                // Get the phi matrices
+
+                // Compute
                 computeError(qt_qtd_qtdd_prev, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
                 Eigen::MatrixXd identity5x5 = Eigen:: MatrixXd::Identity(5, 5);
@@ -142,6 +145,70 @@ namespace novel_adaptive_controller_paper_ns
         void starting(const ros::Time& time) { }
         void stopping(const ros::Time& time) { }
 
+        Eigen::MatrixXd getPhi_vg(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
+        {
+            double q1 = q_robot(1,1);
+            double q2 = q_robot(2,1);
+            double q1d = qd_robot(1,1);
+            double q2d = qd_robot(2,1);
+            const double g = 9.81;
+
+            Eigen::MatrixXd Phi_vg(2,5);
+            Phi_vg(0,0) = 0;
+            Phi_vg(0,1) = -q1d*sin(q2)*q2d - q2d*sin(q2)*(q2d + q1d);
+            Phi_vg(0,2) = 0;
+            Phi_vg(0,3) = g*cos(q1);
+            Phi_vg(0,4) = g*cos(q1 + q2);
+            Phi_vg(1,0) = 0;
+            Phi_vg(1,1) = sin(q2)*q1d*q1d;
+            Phi_vg(1,2) = 0;
+            Phi_vg(1,3) = 0;
+            Phi_vg(1,4) = g*cos(q1 + q2);
+            return Phi_vg;
+        }
+
+        Eigen::MatrixXd getPhi_m2(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
+        {
+            double q1 = q_robot(1,1);
+            double q2 = q_robot(2,1);
+            double q1d = qd_robot(1,1);
+            double q2d = qd_robot(2,1);
+
+            Eigen::MatrixXd Phi_m2(2,5);
+            Phi_m2(0,0) = 0;
+            Phi_m2(0,1) = 2*q2d*sin(q2)*q1d + q2d*q2d*sin(q2); 
+            Phi_m2(0,2) = 0;
+            Phi_m2(0,3) = 0;
+            Phi_m2(0,4) = 0;
+            Phi_m2(1,0) = 0;
+            Phi_m2(1,1) = q2d*sin(q2)*q1d;
+            Phi_m2(1,2) = 0;
+            Phi_m2(1,3) = 0;
+            Phi_m2(1,4) = 0;
+            return Phi_m2;
+        }
+
+        Eigen::MatrixXd getPhi_m1(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
+        {
+            double q1 = q_robot(1,1);
+            double q2 = q_robot(2,1);
+            double q1d = qd_robot(1,1);
+            double q2d = qd_robot(2,1);
+
+            Eigen::MatrixXd Phi_m1(2,5);
+            Phi_m1(0,0) = q1d;
+            Phi_m1(0,1) = 2*cos(q2)*q1d + cos(q2)*q2d;
+            Phi_m1(0,2) = q2d;
+            Phi_m1(0,3) = 0;
+            Phi_m1(0,4) = 0;
+            Phi_m1(1,0) = 0;
+            Phi_m1(1,1) = cos(q2)*q1d;
+            Phi_m1(1,2) = q1d + q2d;
+            Phi_m1(1,3) = 0;
+            Phi_m1(1,4) = 0;
+            return Phi_m1;
+        }
+        
         double deg2rad(double deg)
         {
             return 2*M_PI*(deg/360);
