@@ -4,6 +4,7 @@
 #include <std_msgs/Float64.h>
 #include <fstream>
 #include <Eigen/Core>
+#include <Eigen/LU>
 
 // Initial Estimates
 #define m1 2.35
@@ -83,7 +84,7 @@ namespace novel_adaptive_controller_paper_ns
             qt_qtd_qtdd(5,0) = deg2rad((8*sin(t/5 + 2))/25 - (27*sin((3*t)/10 + 10))/50 - (729*sin((9*t)/25 + 12))/625);
 
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-            if (elapsed_time > 60.0) // Stop sending commands and dump data
+            if (elapsed_time > 10.0) // Stop sending commands and dump data
             {
                 joints_[0].setCommand(tau_prev(0,0));
                 joints_[1].setCommand(tau_prev(1,0));
@@ -96,9 +97,9 @@ namespace novel_adaptive_controller_paper_ns
                 }
                 return;
             }
-            else if (elapsed_time > 0) // Update theta_hat
+            else if (elapsed_time > 0) // Update theta_hat using preveious timestep input and it's output
             {
-                // Get the phi matrices
+                // Get the phi matrices using output from previous timestep
                 Eigen::MatrixXd Phi_m1_curr = getPhi_m1(q_robot, qd_robot);
                 Eigen::MatrixXd Phi_m2_curr = getPhi_m2(q_robot, qd_robot);
                 Eigen::MatrixXd Phi_vg_curr = getPhi_vg(q_robot, qd_robot);
@@ -109,12 +110,52 @@ namespace novel_adaptive_controller_paper_ns
                 Eigen::MatrixXd Phi_vgf_curr = getFiltered(Phi_vg_curr, Phi_vgf_prev, period.toSec());
                 Eigen::MatrixXd tau_f_curr = getFiltered(tau_prev, tau_f_prev, period.toSec());
 
-                // Compute
+                // Compute Phi_f
+                Eigen::MatrixXd Phi_f_curr = (Phi_m1_curr - Phi_m1f_curr)/Kfilt + Phi_m2f_curr + Phi_vgf_curr;
+
+                // Compute W(t) and N(t)
+                Eigen::MatrixXd Wt = Eigen::MatrixXd::Zero(5, 5);
+                Eigen::MatrixXd Nt = Eigen::MatrixXd::Zero(5, 1);
+                Eigen::MatrixXd identity5x5 = Eigen::MatrixXd::Identity(5, 5);
+
+                double prev_elap_time = elapsed_time - period.toSec(); // Need previous elapsed time
+                elapsed_time_ts.push_back(prev_elap_time);
+                Phi_f_all.push_back(Phi_f_curr);
+
+                for (size_t i = 0; i < elapsed_time_ts.size(); i++)
+                {
+                    Eigen::MatrixXd Phi_f = Phi_f_all[i];
+                    double time_Phi_f = elapsed_time_ts[i];
+                    
+                    Wt = Wt + exp(-1*Kff*(prev_elap_time - time_Phi_f))*Kff*(Phi_f.transpose())*Phi_f;
+                    Nt = Nt + exp(-1*Kff*(prev_elap_time - time_Phi_f))*Kff*(Phi_f.transpose())*tau_f_prev;
+                }
+
+                Wt = Wt + exp(-1*Kff*prev_elap_time)*Kinit*identity5x5;
+
+                // Compute Phi using prev input and it's output
                 computeError(qt_qtd_qtdd_prev, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
-                Eigen::MatrixXd identity5x5 = Eigen::MatrixXd::Identity(5, 5);
-                theta_hat_d = Kgamma*identity5x5*Phi.transpose()*r_robot;
-                theta_hat = theta_hat + theta_hat_d*period.toSec(); // NOTE: May have to do interpolation if periodicity is bad.
+                
+                // Update theta_hat
+                // theta_hat_d = Kgamma*identity5x5*Phi.transpose()*r_robot;
+                // theta_hat = theta_hat + theta_hat_d*period.toSec(); // NOTE: May have to do interpolation if periodicity is bad.
+
+                double prev_period = period.toSec(); // NOTE: THIS SHOULD IDEALLY BE THE PREVIOUS TIMESTEP.
+                Eigen::MatrixXd theta_hat_denom(5,5), theta_hat_numer(5,1);
+                theta_hat_denom = identity5x5 + prev_period*Kgamma*Komega2*Wt; 
+                theta_hat_numer = theta_hat + prev_period*Kgamma*Phi.transpose()*r_robot + prev_period*Kgamma*Komega2*Nt;
+                theta_hat = theta_hat_denom.inverse()*theta_hat_numer;
+
+                Eigen::MatrixXd signum(5, 1);
+                signum = Wt*theta_hat - Nt;
+                signum(0,0) = signum(0,0) / abs(signum(0,0));
+                signum(1,0) = signum(1,0) / abs(signum(1,0));
+                signum(2,0) = signum(2,0) / abs(signum(2,0));
+                signum(3,0) = signum(3,0) / abs(signum(3,0));
+                signum(4,0) = signum(4,0) / abs(signum(4,0));
+
+                theta_hat = theta_hat + Kgamma*Komega1*signum;
             }
 
             // Compute the control torque
@@ -166,10 +207,10 @@ namespace novel_adaptive_controller_paper_ns
 
         Eigen::MatrixXd getPhi_vg(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
         {
-            double q1 = q_robot(1,1);
-            double q2 = q_robot(2,1);
-            double q1d = qd_robot(1,1);
-            double q2d = qd_robot(2,1);
+            double q1 = q_robot(0,0);
+            double q2 = q_robot(1,0);
+            double q1d = qd_robot(0,0);
+            double q2d = qd_robot(1,0);
             const double g = 9.81;
 
             Eigen::MatrixXd Phi_vg(2,5);
@@ -188,10 +229,10 @@ namespace novel_adaptive_controller_paper_ns
 
         Eigen::MatrixXd getPhi_m2(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
         {
-            double q1 = q_robot(1,1);
-            double q2 = q_robot(2,1);
-            double q1d = qd_robot(1,1);
-            double q2d = qd_robot(2,1);
+            double q1 = q_robot(0,0);
+            double q2 = q_robot(1,0);
+            double q1d = qd_robot(0,0);
+            double q2d = qd_robot(1,0);
 
             Eigen::MatrixXd Phi_m2(2,5);
             Phi_m2(0,0) = 0;
@@ -209,22 +250,26 @@ namespace novel_adaptive_controller_paper_ns
 
         Eigen::MatrixXd getPhi_m1(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
         {
-            double q1 = q_robot(1,1);
-            double q2 = q_robot(2,1);
-            double q1d = qd_robot(1,1);
-            double q2d = qd_robot(2,1);
+            // std::cout << "\r\n\r\n getPhi_m1 CP0 \r\n\r\n";
+            double q1 = q_robot(0,0);
+            double q2 = q_robot(1,0);
+            double q1d = qd_robot(0,0);
+            double q2d = qd_robot(1,0);
 
+            // std::cout << "\r\n\r\n getPhi_m1 CP1 \r\n\r\n";
             Eigen::MatrixXd Phi_m1(2,5);
             Phi_m1(0,0) = q1d;
             Phi_m1(0,1) = 2*cos(q2)*q1d + cos(q2)*q2d;
             Phi_m1(0,2) = q2d;
             Phi_m1(0,3) = 0;
             Phi_m1(0,4) = 0;
+            // std::cout << "\r\n\r\n getPhi_m1 CP2 \r\n\r\n";
             Phi_m1(1,0) = 0;
             Phi_m1(1,1) = cos(q2)*q1d;
             Phi_m1(1,2) = q1d + q2d;
             Phi_m1(1,3) = 0;
             Phi_m1(1,4) = 0;
+            // std::cout << "\r\n\r\n getPhi_m1 CP3 \r\n\r\n";
             return Phi_m1;
         }
         
@@ -331,6 +376,8 @@ namespace novel_adaptive_controller_paper_ns
             Eigen::MatrixXd qt_qtd_qtdd_prev;
             double Kfilt, Kff, Kinit, Komega1, Komega2;
             Eigen::MatrixXd Phi_m1f_prev, Phi_m2f_prev, Phi_vgf_prev, tau_f_prev;
+            std::vector<double> elapsed_time_ts;
+            std::vector<Eigen::MatrixXd> Phi_f_all;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
