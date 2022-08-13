@@ -44,10 +44,18 @@ namespace novel_adaptive_controller_ls_ns
                 command_[i] = joints_[i].getPosition();
             }
 
-            n.getParam("gains/Kgamma", Kgamma);
+            n.getParam("gains/Kgamma", Kbeta);
+            n.getParam("gains/Kgamma", Kgamma_init); // TODO: Figure out what the initial value is supposed to be.
             n.getParam("gains/Kr", Kr);
             n.getParam("gains/Kp", Kp);
             n.getParam("gains/Kv", Kv);
+
+            // Initialise gamma here since this depends on a param
+            // gamma(0,0) = Kgamma_init;
+            // gamma(0,1) = 0;
+            // gamma(1,0) = 0;
+            // gamma(1,1) = Kgamma_init;
+            gamma = gamma * Kgamma_init;
 
             ROS_INFO("Initialisation complete!");
 
@@ -77,8 +85,8 @@ namespace novel_adaptive_controller_ls_ns
             qt_qtd_qtdd(4,0) = deg2rad(sin(t/10 + 2)/100 - (16*sin(t/5 + 10))/25 - (81*sin((3*t)/10 + 12))/50);
             qt_qtd_qtdd(5,0) = deg2rad((8*sin(t/5 + 2))/25 - (27*sin((3*t)/10 + 10))/50 - (729*sin((9*t)/25 + 12))/625);
 
-            Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-            if (elapsed_time > 60.0) // Stop sending commands and dump data
+            Eigen::MatrixXd qrd, qrdd, r_robot;
+            if (elapsed_time > 10.0) // Stop sending commands and dump data
             {
                 joints_[0].setCommand(tau_prev(0,0));
                 joints_[1].setCommand(tau_prev(1,0));
@@ -93,10 +101,12 @@ namespace novel_adaptive_controller_ls_ns
             }
             else if (elapsed_time > 0) // Update theta_hat
             {
+                Eigen::MatrixXd identity5x5 = Eigen:: MatrixXd::Identity(5, 5);
                 computeError(qt_qtd_qtdd_prev, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
-                Eigen::MatrixXd identity5x5 = Eigen:: MatrixXd::Identity(5, 5);
-                theta_hat_d = Kgamma*identity5x5*Phi.transpose()*r_robot;
+                Eigen::MatrixXd gamma_d = Kbeta*gamma - gamma*Phi.transpose()*Phi*gamma;
+                gamma = gamma + gamma_d*period.toSec();
+                Eigen::MatrixXd theta_hat_d = gamma*Phi.transpose()*r_robot;
                 theta_hat = theta_hat + theta_hat_d*period.toSec(); // NOTE: May have to do interpolation if periodicity is bad.
             }
 
@@ -133,7 +143,6 @@ namespace novel_adaptive_controller_ls_ns
 
             std::cout << elapsed_time;
             std::cout << std::endl;
-            // ROS_INFO("CP"); // Add the location of dump
             tau_prev = tau;
             elapsed_time += period.toSec();
             qt_qtd_qtdd_prev = qt_qtd_qtdd;
@@ -220,13 +229,15 @@ namespace novel_adaptive_controller_ls_ns
         }
 
         public:
-            NovelAdaptiveControllerLS() : theta_hat(5,1){ 
+            NovelAdaptiveControllerLS() : theta_hat(5,1), gamma(5,5){ 
                 // Initialise theta_hat
                 theta_hat(0,0) = m1*pow(l1,2) + m2*pow(l1,2) + m2*pow(l2,2) + Izz1 + Izz2;
                 theta_hat(1,0) = m2*l1*l2;
                 theta_hat(2,0) = m2*pow(l2,2) + Izz2;
                 theta_hat(3,0) = m1*l1 + m2*l1;
                 theta_hat(4,0) = m2*l2;
+
+                gamma = Eigen:: MatrixXd::Identity(5, 5);
             }
         
         private:
@@ -235,9 +246,9 @@ namespace novel_adaptive_controller_ls_ns
             ros::Subscriber sub_command_;
             Eigen::MatrixXd theta_hat;
             Eigen::MatrixXd tau_prev;
-            double Kr, Kv, Kp, Kgamma;
+            double Kr, Kv, Kp, Kbeta, Kgamma_init;
             double elapsed_time = 0;
-            Eigen::MatrixXd qt_qtd_qtdd_prev;
+            Eigen::MatrixXd qt_qtd_qtdd_prev, gamma;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;

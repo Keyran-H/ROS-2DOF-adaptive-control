@@ -14,4 +14,5 @@ BERT2_robot:
       Kr: 0.5
       Kv: 1.5
       Kp: 1.5
-      Kgamma: 4
+      Kgamma: 0.1
+      Kbeta: 0.1
