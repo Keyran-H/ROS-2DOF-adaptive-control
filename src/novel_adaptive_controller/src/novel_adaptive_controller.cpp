@@ -66,17 +66,10 @@ namespace novel_adaptive_controller_ns
             qd_robot(0,0) = joints_[0].getVelocity();
             qd_robot(1,0) = joints_[1].getVelocity();
 
-            double t = elapsed_time; // TODO: just use directly 
-            Eigen::MatrixXd qt_qtd_qtdd(6,1);
-            // qt_qtd_qtdd(0,0) = 20 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12);
-            // qt_qtd_qtdd(1,0) = 24 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12);
-            qt_qtd_qtdd(0,0) = deg2rad(17.4534 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12));
-            qt_qtd_qtdd(1,0) = deg2rad(0.8189 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12));
-            qt_qtd_qtdd(2,0) = deg2rad(cos(t/10 + 2)/10 + (16*cos(t/5 + 10))/5 + (27*cos((3*t)/10 + 12))/5);
-            qt_qtd_qtdd(3,0) = deg2rad((8*cos(t/5 + 2))/5 + (9*cos((3*t)/10 + 10))/5 + (81*cos((9*t)/25 + 12))/25);
-            qt_qtd_qtdd(4,0) = deg2rad(sin(t/10 + 2)/100 - (16*sin(t/5 + 10))/25 - (81*sin((3*t)/10 + 12))/50);
-            qt_qtd_qtdd(5,0) = deg2rad((8*sin(t/5 + 2))/25 - (27*sin((3*t)/10 + 10))/50 - (729*sin((9*t)/25 + 12))/625);
-
+            // Get the trajectory point
+            Eigen::MatrixXd qt_qtd_qtdd = getTrajectory(elapsed_time);
+            Eigen::MatrixXd qt_qtd_qtdd_prev = getTrajectory(elapsed_time - period.toSec());
+            
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
             if (elapsed_time > 10.0) // Stop sending commands and dump data
             {
@@ -115,12 +108,12 @@ namespace novel_adaptive_controller_ns
             sim_state.push_back(q_robot(1,0));
             sim_state.push_back(qd_robot(0,0));
             sim_state.push_back(qd_robot(1,0));
-            sim_state.push_back(qt_qtd_qtdd(0,0)); // qt(0,0)
-            sim_state.push_back(qt_qtd_qtdd(1,0)); // qt(1,0)
-            sim_state.push_back(qt_qtd_qtdd(2,0)); // qtd(0,0)
-            sim_state.push_back(qt_qtd_qtdd(3,0)); // qtd(1,0)
-            sim_state.push_back(qt_qtd_qtdd(4,0)); // qtdd(0,0)
-            sim_state.push_back(qt_qtd_qtdd(5,0)); // qtdd(1,0)
+            sim_state.push_back(qt_qtd_qtdd_prev(0,0));
+            sim_state.push_back(qt_qtd_qtdd_prev(1,0));
+            sim_state.push_back(qt_qtd_qtdd_prev(2,0));
+            sim_state.push_back(qt_qtd_qtdd_prev(3,0));
+            sim_state.push_back(qt_qtd_qtdd_prev(4,0));
+            sim_state.push_back(qt_qtd_qtdd_prev(5,0));
             sim_state.push_back(theta_hat(0,0));
             sim_state.push_back(theta_hat(1,0));
             sim_state.push_back(theta_hat(2,0));
@@ -142,6 +135,18 @@ namespace novel_adaptive_controller_ns
         void starting(const ros::Time& time) { }
         void stopping(const ros::Time& time) { }
 
+        Eigen::MatrixXd getTrajectory(double t)
+        {
+            Eigen::MatrixXd qt_qtd_qtdd(6,1);
+            qt_qtd_qtdd(0,0) = deg2rad(17.4534 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12));
+            qt_qtd_qtdd(1,0) = deg2rad(0.8189 + 8*sin(0.2*t + 2) + 6*sin(0.3*t+10) + 9*sin(0.36*t + 12));
+            qt_qtd_qtdd(2,0) = deg2rad(cos(t/10 + 2)/10 + (16*cos(t/5 + 10))/5 + (27*cos((3*t)/10 + 12))/5);
+            qt_qtd_qtdd(3,0) = deg2rad((8*cos(t/5 + 2))/5 + (9*cos((3*t)/10 + 10))/5 + (81*cos((9*t)/25 + 12))/25);
+            qt_qtd_qtdd(4,0) = deg2rad(sin(t/10 + 2)/100 - (16*sin(t/5 + 10))/25 - (81*sin((3*t)/10 + 12))/50);
+            qt_qtd_qtdd(5,0) = deg2rad((8*sin(t/5 + 2))/25 - (27*sin((3*t)/10 + 10))/50 - (729*sin((9*t)/25 + 12))/625);
+            return qt_qtd_qtdd;
+        }
+        
         double deg2rad(double deg)
         {
             return 2*M_PI*(deg/360);
@@ -237,7 +242,6 @@ namespace novel_adaptive_controller_ns
             Eigen::MatrixXd tau_prev;
             double Kr, Kv, Kp, Kgamma;
             double elapsed_time = 0;
-            Eigen::MatrixXd qt_qtd_qtdd_prev;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
