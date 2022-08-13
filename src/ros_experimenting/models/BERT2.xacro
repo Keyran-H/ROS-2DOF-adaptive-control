@@ -6,7 +6,7 @@
 
     <!-- Base Link -->
     <xacro:property name="mass" value="5" />
-    <xacro:property name="height1" value="2" />
+    <xacro:property name="height1" value="0.5" />
     <xacro:property name="width" value="0.1" />
 
     <!-- Middle Link -->

@@ -14,28 +14,28 @@
   <!-- Base Link -->
   <link name="BERT2_baselink">
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 1.0"/>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
       <geometry>
-        <box size="0.1 0.1 2"/>
+        <box size="0.1 0.1 0.5"/>
       </geometry>
     </collision>
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 1.0"/>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
       <geometry>
-        <box size="0.1 0.1 2"/>
+        <box size="0.1 0.1 0.5"/>
       </geometry>
       <material name="black"/>
     </visual>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 1.0"/>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
       <mass value="5"/>
-      <inertia ixx="1.67083333333" ixy="0.0" ixz="0.0" iyy="1.67083333333" iyz="0.0" izz="0.00833333333333"/>
+      <inertia ixx="0.108333333333" ixy="0.0" ixz="0.0" iyy="0.108333333333" iyz="0.0" izz="0.00833333333333"/>
     </inertial>
   </link>
   <joint name="BERT2_joint1" type="continuous">
     <parent link="BERT2_baselink"/>
     <child link="BERT2_link1"/>
-    <origin rpy="0 0 0" xyz="0 0.1 1.975"/>
+    <origin rpy="0 0 0" xyz="0 0.1 0.475"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0.7"/>
   </joint>
@@ -132,3 +132,4 @@
     <material>Gazebo/Black</material>
   </gazebo>
 </robot>
+
