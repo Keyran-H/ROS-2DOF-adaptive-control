@@ -1,3 +1,6 @@
+clear
+close all
+
 % Import the Robot
 robot = importrobot("/home/kiran/dissertation/ros_experimenting_ws/src/ros_experimenting/models/planar_RR_robot.urdf");
 endEffector = "planar_RR_link3";
