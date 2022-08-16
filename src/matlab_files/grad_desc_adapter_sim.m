@@ -6,7 +6,7 @@ simulation_time = 10; % seconds
 timeStep = 0.01; % seconds
 
 % Custom Gains
-Kr = 2;
+Kr = 1;
 Kv = 5;
 Kp = 0.1;
 gamma = 2*eye(5);
@@ -23,7 +23,6 @@ l1 = 0.3;
 l2 = 3;
 Izz1 = 4;
 Izz2 = 2;
-theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2; m1*l1 + m2*l1; m2*l2]; % Double checked!
 
 % m1 = 1;
 % m2 = 1;
@@ -31,6 +30,8 @@ theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2
 % l2 = 1;
 % Izz1 = 1;
 % Izz2 = 1;
+
+theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2; m1*l1 + m2*l1; m2*l2]; % Double checked!
 
 theta_hat_data = [];
 e_robot_data = [];
@@ -92,23 +93,27 @@ end
 Error_abs_int = sum(abs(e_robot_data),2)./simulation_time
 
 figure
-title('Positin Error')
-plot(trajTimes,e_robot_data)
+plot(trajTimes,theta_hat_data)
+title('Parameter Convergence')
 xlabel('time')
-ylabel('position error')
+legend('theta 1', 'theta 2', 'theta 3', 'theta 4', 'theta 5')
+
 
 figure
-title('Velocity Errors')
-plot(trajTimes,ed_robot_data)
+plot(trajTimes,e_robot_data)
+title('Position Error')
+xlabel('time')
+ylabel('position error / rad')
+legend('joint1', 'joint2')
 
+
+figure
+plot(trajTimes,ed_robot_data)
+title('Velocity Errors')
+legend('joint1', 'joint2')
 xlabel('time')
 ylabel('velocity error')
 
-figure
-title('Parameter Convergence')
-plot(trajTimes,theta_hat_data)
-
-xlabel('time')
 
 function [qt, qtd, qtdd] = getTrajectoryPt(t)
     qt = [deg2rad(sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12));... % t=0 -> -17.4534
