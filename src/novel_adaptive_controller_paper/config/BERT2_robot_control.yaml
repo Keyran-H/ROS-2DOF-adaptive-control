@@ -15,8 +15,8 @@ BERT2_robot:
       Kv: 1.5
       Kp: 1.5
       Kgamma: 2
-      Kfilt: 100
-      Kff: 0.01
+      Kfilt: 1000
+      Kff: 0.001
       Kinit: 0.001
-      Komega1: 0.002
+      Komega1: 0
       Komega2: 0.1

@@ -55,6 +55,9 @@ namespace novel_adaptive_controller_paper_ns
             n.getParam("gains/Komega1", Komega1);
             n.getParam("gains/Komega2", Komega2);
 
+            W_t_prev = Kinit*Eigen::MatrixXd::Identity(5, 5);
+            std::cout << W_t_prev;
+
             ROS_INFO("Initialisation complete!");
 
             return true;
@@ -107,24 +110,12 @@ namespace novel_adaptive_controller_paper_ns
                 Eigen::MatrixXd Phi_f_curr = (Phi_m1_curr - Phi_m1f_curr)/Kfilt + Phi_m2f_curr + Phi_vgf_curr;
 
                 // Compute W(t) and N(t)
-                Eigen::MatrixXd Wt = Eigen::MatrixXd::Zero(5, 5);
-                Eigen::MatrixXd Nt = Eigen::MatrixXd::Zero(5, 1);
                 Eigen::MatrixXd identity5x5 = Eigen::MatrixXd::Identity(5, 5);
+                Eigen::MatrixXd Wt = (W_t_prev + Kff*(Phi_f_curr.transpose())*(Phi_f_curr)*period.toSec()) / (1 + Kff*period.toSec());
+                Eigen::MatrixXd Nt = (N_t_prev + Kff*(Phi_f_curr.transpose())*tau_f_curr*period.toSec()) / (1 + Kff*period.toSec());
 
-                double prev_elap_time = elapsed_time - period.toSec(); // Need previous elapsed time
-                elapsed_time_ts.push_back(prev_elap_time);
-                Phi_f_all.push_back(Phi_f_curr);
-
-                for (size_t i = 0; i < elapsed_time_ts.size(); i++)
-                {
-                    Eigen::MatrixXd Phi_f = Phi_f_all[i];
-                    double time_Phi_f = elapsed_time_ts[i];
-                    
-                    Wt = Wt + exp(-1*Kff*(prev_elap_time - time_Phi_f))*Kff*(Phi_f.transpose())*Phi_f;
-                    Nt = Nt + exp(-1*Kff*(prev_elap_time - time_Phi_f))*Kff*(Phi_f.transpose())*tau_f_prev;
-                }
-
-                Wt = Wt + exp(-1*Kff*prev_elap_time)*Kinit*identity5x5;
+                W_t_prev = Wt;
+                N_t_prev = Nt;
 
                 // Compute Phi using prev input and it's output
                 computeError(qt_qtd_qtdd_prev, q_robot, qd_robot, qrd, qrdd, r_robot);
@@ -366,7 +357,9 @@ namespace novel_adaptive_controller_paper_ns
                 Phi_m1f_prev = Eigen::MatrixXd::Zero(2, 5);
                 Phi_m2f_prev = Eigen::MatrixXd::Zero(2, 5);
                 Phi_vgf_prev = Eigen::MatrixXd::Zero(2, 5);
+                Phi_f_prev = Eigen::MatrixXd::Zero(2, 5);
                 tau_f_prev = Eigen::MatrixXd::Zero(2, 1);
+                N_t_prev = Eigen::MatrixXd::Zero(5, 1);
             }
         
         private:
@@ -378,7 +371,7 @@ namespace novel_adaptive_controller_paper_ns
             double Kr, Kv, Kp, Kgamma;
             double elapsed_time = 0;
             double Kfilt, Kff, Kinit, Komega1, Komega2;
-            Eigen::MatrixXd Phi_m1f_prev, Phi_m2f_prev, Phi_vgf_prev, tau_f_prev;
+            Eigen::MatrixXd Phi_m1f_prev, Phi_m2f_prev, Phi_vgf_prev, tau_f_prev, Phi_f_prev, W_t_prev, N_t_prev;
             std::vector<double> elapsed_time_ts;
             std::vector<Eigen::MatrixXd> Phi_f_all;
 
