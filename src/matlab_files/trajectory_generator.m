@@ -4,7 +4,7 @@ close all
 % Import the Robot
 robot = importrobot("/home/kiran/dissertation/ros_experimenting_ws/src/ros_experimenting/models/planar_RR_robot.urdf");
 endEffector = "planar_RR_link3";
-timeStep = 0.01; % seconds
+timeStep = 0.001; % seconds
 toolSpeed = 0.1; % m/s
 showTrajectory = false;
 
@@ -62,6 +62,7 @@ if showTrajectory
         drawnow;
     end
     % Add a legend and title
-    title('Manipulator Trajectories')
+    title('Manipulator Trajectory')
+    legend('Trajectory Points')
 end
 
