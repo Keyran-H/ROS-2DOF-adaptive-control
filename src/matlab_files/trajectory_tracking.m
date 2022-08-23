@@ -25,6 +25,8 @@ theta_hat = [m1*l1^2 + m2*l1^2 + m2*l2^2 + Izz1 + Izz2; m2*l1*l2; m2*l2^2 + Izz2
 theta_hat_data = [];
 e_robot_data = [];
 ed_robot_data = [];
+q_robot_data = [];
+qd_robot_data = [];
 
 % Debug
 qdd_robot_debug = [];
@@ -65,29 +67,60 @@ for i=1:length(trajTimes)
     theta_hat_data = [theta_hat_data theta_hat];
     e_robot_data = [e_robot_data e_robot];
     ed_robot_data = [ed_robot_data ed_robot];
+    q_robot_data = [q_robot_data q_robot];
+    qd_robot_data = [qd_robot_data qd_robot];
 
     qdd_robot_debug = [qdd_robot_debug qdd_robot];
 
 end
 
 figure
-title('Positin Error')
-plot(trajTimes,e_robot_data)
+plot(trajTimes, q_robot_data(1,:), 'LineWidth', 2, 'LineStyle', '-')
+hold on
+plot(trajTimes, qt(1,:), 'LineWidth', 2.5)
 xlabel('time')
-ylabel('position error')
+ylabel('position')
+legend('Actual Path', 'Trajectory Demand', 'Location', 'best')
+title('planar\_RR\_joint1 trajectory tracking')
+grid on
+print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/matlab_sim/joint1_traj_track.eps', '-depsc')
 
 figure
-title('Velocity Errors')
-plot(trajTimes,ed_robot_data)
-
+plot(trajTimes, q_robot_data(2,:), 'LineWidth', 2, 'LineStyle', '-')
+hold on
+plot(trajTimes, qt(2,:), 'LineWidth', 2.5)
 xlabel('time')
-ylabel('velocity error')
+ylabel('position')
+legend('Actual Path', 'Trajectory Demand', 'Location', 'best')
+title('planar\_RR\_joint2 trajectory tracking')
+grid on
+print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/matlab_sim/joint2_traj_track.eps', '-depsc')
 
 figure
+plot(trajTimes, e_robot_data, 'LineWidth', 2)
+title('Joint Position Errors')
+xlabel('time, seconds')
+ylabel('Position error, radians')
+legend('planar\_RR\_joint1', 'planar\_RR\_joint2', 'Location', 'best')
+grid on
+print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/matlab_sim/joints_pos_errors.eps', '-depsc')
+
+figure
+plot(trajTimes,ed_robot_data, 'LineWidth', 2)
+title('Joint Velocity Errors')
+xlabel('time, seconds')
+ylabel('Velocity error, radians')
+legend('planar\_RR\_joint1', 'planar\_RR\_joint2', 'Location', 'best')
+grid on
+print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/matlab_sim/joints_vel_errors.eps', '-depsc')
+
+figure
+plot(trajTimes,theta_hat_data, 'LineWidth', 2)
 title('Parameter Convergence')
-plot(trajTimes,theta_hat_data)
-
-xlabel('time')
+xlabel('time, seconds')
+legend('theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'Location', 'best')
+grid on
+print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/matlab_sim/parameter_errors.eps', '-depsc')
 
 function [M, Vm, G] = getRobotDynamics(q_robot, qd_robot)
     m1 = 1;
