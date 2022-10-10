@@ -1,5 +1,0 @@
-<library path="lib/libnovel_adaptive_controller_ls_lib">
-    <class name="novel_adaptive_controller_ls/NovelAdaptiveControllerLS"
-           type="novel_adaptive_controller_ls_ns::NovelAdaptiveControllerLS"
-           base_class_type="controller_interface::ControllerBase" />
-</library>
