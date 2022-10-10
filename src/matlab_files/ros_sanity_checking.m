@@ -1,8 +1,12 @@
+% NOTE: This file is to be used strictly with planar_RR robot
 clear
 close all
-% sim_states = readtable("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
-sim_states = readtable("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/novel_adaptive_data.csv");
+sim_states = readtable("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
+
 sim_states = table2array(sim_states);
+period = 0.001; % cell per seconds
+desired_plot_time = 0.02;
+cells = desired_plot_time / period;
 
 % Custom Gains. REMEMBER TO DOUBLE CHECK THIS
 Kr = 0.1;
@@ -35,15 +39,15 @@ for i=1:sim_iterations(1)
     qd_robot = [sim_states(i,5); sim_states(i,6)];
 
     % Trajectory
-    qt = [sim_states(i,7); sim_states(i,8)];
-    qtd = [sim_states(i,9); sim_states(i,10)];
-    qtdd = [sim_states(i,11); sim_states(i,12)];
+%     qt = [sim_states(i,7); sim_states(i,8)];
+%     qtd = [sim_states(i,9); sim_states(i,10)];
+%     qtdd = [sim_states(i,11); sim_states(i,12)];
 
     % Compute errors
-    e_robot = qt - q_robot;
-    qrd = qtd + Kp*e_robot;
-    ed_robot = qtd - qd_robot;
-    qrdd = qtdd + Kv*ed_robot;
+    e_robot = [sim_states(i,7); sim_states(i,8)] - q_robot;
+    qrd = [sim_states(i,9); sim_states(i,10)] + Kp*e_robot;
+    ed_robot = [sim_states(i,9); sim_states(i,10)] - qd_robot;
+    qrdd = [sim_states(i,11); sim_states(i,12)] + Kv*ed_robot;
     r_robot = qrd - qd_robot;
 
     % Get Parameters
@@ -64,51 +68,111 @@ for i=1:sim_iterations(1)
 
 end
 
+% figure
+bar(sim_states(1:cells,1),sim_states(1:cells,2))
+mean(sim_states(:,2))
+xlabel('simulation elapsed time, seconds')
+ylabel('update() period, seconds')
+title('update() Period versus Sim Elapsed Time')
+grid on
+print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/matlab_ROS_sim/update_timing.eps', '-depsc')
+% 
+% figure
+% plot(sim_states(:,1), sim_states(:,3), 'LineWidth', 2, 'LineStyle', '-')
+% hold on
+% plot(sim_states(:,1), sim_states(:,7), 'LineWidth', 2.5)
+% xlabel('time')
+% ylabel('position')
+% legend('Actual Path', 'Trajectory Demand', 'Location', 'best')
+% title('planar\_RR\_joint1 trajectory tracking')
+% grid on
+% % print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/ROS_sim/joint1_traj_track.eps', '-depsc')
+% % 
+% figure
+% plot(sim_states(:,1), sim_states(:,4), 'LineWidth', 2, 'LineStyle', '-')
+% hold on
+% plot(sim_states(:,1), sim_states(:,8), 'LineWidth', 2.5)
+% xlabel('time')
+% ylabel('position')
+% legend('Actual Path', 'Trajectory Demand', 'Location', 'best')
+% title('planar\_RR\_joint2 trajectory tracking')
+% grid on
+% % print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/ROS_sim/joint2_traj_track.eps', '-depsc')
+% % 
+% figure
+% plot(sim_states(:,1), e_robot_data, 'LineWidth', 2)
+% title('Joint Position Errors')
+% xlabel('time, seconds')
+% ylabel('Position error, radians')
+% legend('planar\_RR\_joint1', 'planar\_RR\_joint2', 'Location', 'best')
+% grid on
+% % print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/ROS_sim/joints_pos_errors.eps', '-depsc')
+% % 
+% figure
+% plot(sim_states(:,1),ed_robot_data, 'LineWidth', 2)
+% title('Joint Velocity Errors')
+% xlabel('time, seconds')
+% ylabel('Velocity error, radians')
+% legend('planar\_RR\_joint1', 'planar\_RR\_joint2', 'Location', 'best')
+% grid on
+% % print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/ROS_sim/joints_vel_errors.eps', '-depsc')
+% % 
+% figure
+% plot(sim_states(:,1),theta_hat_data, 'LineWidth', 2)
+% title('Parameter Convergence')
+% xlabel('time, seconds')
+% legend('theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'Location', 'best')
+% grid on
+% % print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/ROS_sim/parameter_errors.eps', '-depsc')
 
-figure
-plot(sim_states(:,1),sim_states(:,3))
-hold on
-plot(sim_states(:,1),sim_states(:,7))
-xlabel('time')
-ylabel('position')
-legend('actual', 'desired')
-title('Joint 1 trajectory, desired vs actual')
+e_robot_ros_data = e_robot_data;
+ed_robot_ros_data = ed_robot_data;
+theta_hat_ros_data = theta_hat_data ;
 
-figure
-plot(sim_states(:,1),sim_states(:,4))
-hold on
-plot(sim_states(:,1),sim_states(:,8))
-xlabel('time')
-ylabel('position')
-legend('actual', 'desired')
-title('Joint 2 trajectory, desired vs actual')
+% figure
+% plot(sim_states(:,1),sim_states(:,3))
+% hold on
+% plot(sim_states(:,1),sim_states(:,7))
+% xlabel('time')
+% ylabel('position')
+% legend('actual', 'desired')
+% title('Joint 1 trajectory, desired vs actual')
+% 
+% figure
+% plot(sim_states(:,1),sim_states(:,4))
+% hold on
+% plot(sim_states(:,1),sim_states(:,8))
+% xlabel('time')
+% ylabel('position')
+% legend('actual', 'desired')
+% title('Joint 2 trajectory, desired vs actual')
+% 
+% figure
+% plot(sim_states(:,1),e_robot_data)
+% xlabel('time')
+% ylabel('position error')
+% legend('joint1', 'joint2')
+% title('Position Error')
+% 
+% figure
+% plot(sim_states(:,1),ed_robot_data)
+% xlabel('time')
+% ylabel('velocity error')
+% legend('joint1', 'joint2')
+% title('Velocity Errors')
+% 
+% figure
+% plot(sim_states(:,1),theta_hat_data)
+% xlabel('time')
+% ylabel('Parameter')
+% title('Parameter Convergence')
 
-figure
-plot(sim_states(:,1),e_robot_data)
-xlabel('time')
-ylabel('position error')
-legend('joint1', 'joint2')
-title('Position Error')
-
-figure
-plot(sim_states(:,1),ed_robot_data)
-xlabel('time')
-ylabel('velocity error')
-legend('joint1', 'joint2')
-title('Velocity Errors')
-
-figure
-plot(sim_states(:,1),theta_hat_data)
-xlabel('time')
-ylabel('Parameter')
-title('Parameter Convergence')
-
-figure
-plot(sim_states(:,1),etau_robot_data)
-xlabel('time')
-ylabel('Torque mismatch error')
-legend('joint1', 'joint2')
-title('Torque MATLAB and Sim mismatch')
+% figure
+% plot(sim_states(:,1),etau_robot_data)
+% xlabel('time')
+% ylabel('Torque mismatch error')
+% legend('joint1', 'joint2')
+% title('Torque MATLAB and Sim mismatch')
 
 
 

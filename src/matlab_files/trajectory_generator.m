@@ -14,8 +14,8 @@ numJoints = numel(currentRobotJConfig);
 
 initTime = 0;
 jointInit = currentRobotJConfig;
-taskInit = getTransform(robot,jointInit,endEffector);
-taskFinal = trvec2tform([0.899, 0.200, 1.990])*eul2tform([pi 0 pi]);
+taskInit = getTransform(robot,jointInit,endEffector)
+taskFinal = trvec2tform([0.899, 0.200, 1.990])*eul2tform([pi 0 pi])
 distance = norm(tform2trvec(taskInit)-tform2trvec(taskFinal));
 
 finalTime = (distance/toolSpeed) - initTime;
@@ -62,7 +62,7 @@ if showTrajectory
         drawnow;
     end
     % Add a legend and title
-    title('Manipulator Trajectory')
-    legend('Trajectory Points')
+    title('End Effector Trajectory')
+    legend('End Effector Pose')
 end
 

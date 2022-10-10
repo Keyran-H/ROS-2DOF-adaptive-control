@@ -122,6 +122,10 @@ legend('theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'Location', 'best')
 grid on
 print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/MATLAB_Sim_Method1/matlab_sim/parameter_errors.eps', '-depsc')
 
+e_robot_matlab_data = e_robot_data;
+ed_robot_matlab_data = ed_robot_data;
+theta_hat_matlab_data = theta_hat_data;
+
 function [M, Vm, G] = getRobotDynamics(q_robot, qd_robot)
     m1 = 1;
     m2 = 1;

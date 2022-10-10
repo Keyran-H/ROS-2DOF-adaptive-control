@@ -16,6 +16,8 @@ ros_novel_states = table2array(readtable("/home/kiran/dissertation/ros_experimen
 % Compute integral absolute error
 ros_graddes_error_abs_int = sum(abs(ros_graddes_states(:,3:4))',2)./simulation_time
 ros_novel_error_abs_int = sum(abs(ros_novel_states(:,3:4))',2)./simulation_time
+matlab_graddes_error_abs_int = sum(abs(e_robot_matgrad_data),2)./simulation_time
+matlab_novel_error_abs_int = sum(abs(e_robot_matnovel_data),2)./simulation_time
 
 % Get the axis times
 axistimes = ros_graddes_states(:,1) - ros_graddes_states(1,1);
@@ -33,8 +35,8 @@ hold on
 plot(axistimes, ros_novel_states(:,3), 'LineWidth', 2, 'LineStyle', ':')   
 xlabel('time, seconds')
 ylabel('Joint Position, radians')
-legend('Trajectory Demand', 'Grad Desc. MATLAB','Novel MATLAB', 'Grad Desc. ROS','Novel ROS', 'Location', 'best')
-title('BERT2\_joint1 trajectory tracking')
+legend('Trajectory Demand', 'Grad Desc. Law MATLAB','Novel Law MATLAB', 'Grad Desc. Law ROS-Gazebo','Novel Law ROS-Gazebo', 'Location', 'best')
+title('BERT2\_joint1 Trajectory Tracking')
 grid on
 print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/joint1_traj_track.eps', '-depsc')
 
@@ -51,8 +53,8 @@ hold on
 plot(axistimes, ros_novel_states(:,4), 'LineWidth', 2, 'LineStyle', ':')   
 xlabel('time, seconds')
 ylabel('Joint Position, radians')
-legend('Trajectory Demand', 'Gradient Descent MATLAB','Novel MATLAB', 'Gradient Descent ROS','Novel ROS', 'Location', 'best')
-title('BERT2\_joint2 trajectory tracking')
+legend('Trajectory Demand', 'Grad Desc. Law MATLAB','Novel Law MATLAB', 'Grad Desc. Law ROS-Gazebo','Novel Law ROS-Gazebo', 'Location', 'best')
+title('BERT2\_joint2 Trajectory Tracking')
 grid on
 print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/joint2_traj_track.eps', '-depsc')
 
@@ -61,10 +63,10 @@ figure
 plot(axistimes, e_robot_matgrad_data, 'LineWidth', 2)
 hold on
 plot(axistimes, e_robot_matnovel_data, 'LineWidth', 2)
-title('BERT2 MATLAB Sim Joint Position Errors')
+title('BERT2 MATLAB Joint Position Errors')
 xlabel('time, seconds')
 ylabel('Position Error, radians')
-legend('Gradient Descent BERT2\_joint1', 'Gradient Descent BERT2\_joint2', 'Novel BERT2\_joint1', 'Novel BERT2\_joint2', 'Location', 'best')
+legend('Gradient Desc. Law BERT2\_joint1', 'Gradient Desc. Law BERT2\_joint2', 'Novel Law BERT2\_joint1', 'Novel Law BERT2\_joint2', 'Location', 'best')
 grid on
 print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/joints_pos_errors_matlab.eps', '-depsc')
 
@@ -81,10 +83,10 @@ hold on
 plot(axistimes, ros_novel_pos_err_j1, 'LineWidth', 2)
 hold on
 plot(axistimes, ros_novel_pos_err_j2, 'LineWidth', 2)
-title('BERT2 ROS Sim Joint Position Errors')
+title('BERT2 ROS-Gazebo Joint Position Errors')
 xlabel('time, seconds')
 ylabel('Position Error, radians')
-legend('Gradient Descent BERT2\_joint1', 'Gradient Descent BERT2\_joint2', 'Novel BERT2\_joint1', 'Novel BERT2\_joint2', 'Location', 'best')
+legend('Gradient Desc. Law BERT2\_joint1', 'Gradient Desc. Law BERT2\_joint2', 'Novel Law BERT2\_joint1', 'Novel Law BERT2\_joint2', 'Location', 'best')
 grid on
 print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/joints_pos_errors_ros.eps', '-depsc')
 
@@ -93,10 +95,10 @@ figure
 plot(axistimes, ed_robot_matgrad_data, 'LineWidth', 2)
 hold on
 plot(axistimes, ed_robot_matnovel_data, 'LineWidth', 2)
-title('BERT2 MATLAB Sim Joint Velocity Errors')
+title('BERT2 MATLAB Joint Velocity Errors')
 xlabel('time, seconds')
 ylabel('Velocity Error, radians/s')
-legend('Gradient Descent BERT2\_joint1', 'Gradient Descent BERT2\_joint2', 'Novel BERT2\_joint1', 'Novel BERT2\_joint2', 'Location', 'best')
+legend('Gradient Desc. Law BERT2\_joint1', 'Gradient Desc. Law BERT2\_joint2', 'Novel Law BERT2\_joint1', 'Novel Law BERT2\_joint2', 'Location', 'best')
 grid on
 print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/joints_vel_errors_matlab.eps', '-depsc')
 
@@ -113,10 +115,10 @@ hold on
 plot(axistimes, ros_novel_vel_err_j1, 'LineWidth', 2)
 hold on
 plot(axistimes, ros_novel_vel_err_j2, 'LineWidth', 2)
-title('BERT2 ROS Sim Joint Velocity Errors')
+title('BERT2 ROS-Gazebo Joint Velocity Errors')
 xlabel('time, seconds')
 ylabel('Velocity Error, radians/s')
-legend('Gradient Descent BERT2\_joint1', 'Gradient Descent BERT2\_joint2', 'Novel BERT2\_joint1', 'Novel BERT2\_joint2', 'Location', 'best')
+legend('Gradient Desc. Law BERT2\_joint1', 'Gradient Desc. Law BERT2\_joint2', 'Novel Law BERT2\_joint1', 'Novel Law BERT2\_joint2', 'Location', 'best')
 grid on
 print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/joints_vel_errors_ros.eps', '-depsc')
 
@@ -142,7 +144,7 @@ print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/
 theta_hat_rosgrad_data = [ros_graddes_states(:,13), ros_graddes_states(:,14), ros_graddes_states(:,15), ros_graddes_states(:,16), ros_graddes_states(:,17)];
 figure
 plot(axistimes, theta_hat_rosgrad_data, 'LineWidth', 2)
-title('ROS Gradient Descent Parameter Estimation')
+title('ROS-Gazebo Gradient Descent Parameter Estimation')
 xlabel('time, seconds')
 legend('theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'Location', 'best')
 grid on
@@ -152,7 +154,7 @@ print('~/dissertation/ros_experimenting_ws/src/matlab_files/data/Graphs/Method2/
 theta_hat_rosnovel_data = [ros_novel_states(:,13), ros_novel_states(:,14), ros_novel_states(:,15), ros_novel_states(:,16), ros_novel_states(:,17)];
 figure
 plot(axistimes, theta_hat_rosnovel_data, 'LineWidth', 2)
-title('ROS Novel Algorithm Parameter Estimation')
+title('ROS-Gazebo Novel Algorithm Parameter Estimation')
 xlabel('time, seconds')
 legend('theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'Location', 'best')
 grid on

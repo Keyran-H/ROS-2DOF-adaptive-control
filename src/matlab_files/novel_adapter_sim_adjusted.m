@@ -2,19 +2,19 @@ clear
 close all
 
 % Define custom parameters
-simulation_time = 10; % seconds
-timeStep = 0.01; % seconds
+simulation_time = 60; % seconds
+timeStep = 0.001; % seconds
 
 % Custom Gains
-Kr = 2;
-Kv = 5;
-Kp = 0.1;
-gamma = 2*eye(5);
-Kfilt = 100;
+Kr = 1;
+Kv = 15;
+Kp = 5;
+gamma = 20*eye(5);
+Kfilt = 1000;
 Kff = 0.001;
 Kinit = 0.001;
 Komega1 = 0;
-Komega2 = 0.1;
+Komega2 = 0.01;
 
 % Simulation states
 timeIntervals = 0:timeStep:simulation_time;
@@ -27,16 +27,24 @@ W_t_prev = Kinit*eye(5);
 N_t_prev = zeros(5,1);
 
 
-q_robot = [-0.3046; -0.0143]; % Make the robot start at joint position 0
+q_robot = [0; 0]; % Make the robot start at joint position 0
 qd_robot = [0;0];
 
 % Initial Estimates
-m1 = 0.1;
-m2 = 1.7;
+m1 = 2.4;
+m2 = 2.9;
 l1 = 0.3;
-l2 = 3;
-Izz1 = 4;
-Izz2 = 2;
+l2 = 0.4;
+Izz1 = 0.002;
+Izz2 = 0.004;
+
+
+% m1 = 0.1;
+% m2 = 1.7;
+% l1 = 0.3;
+% l2 = 3;
+% Izz1 = 4;
+% Izz2 = 2;
 
 % m1 = 1;
 % m2 = 1;
@@ -52,6 +60,8 @@ e_robot_data = [];
 ed_robot_data = [];
 trajTimes = [];
 Phi_f_all = [];
+q_robot_data = [];
+qd_robot_data = [];
 elapsed_time = 0;
 
 % Debug
@@ -123,6 +133,8 @@ for i=timeIntervals
     e_robot_data = [e_robot_data e_robot];
     ed_robot_data = [ed_robot_data ed_robot];
     trajTimes = [trajTimes elapsed_time];
+    q_robot_data = [q_robot_data q_robot ];
+    qd_robot_data = [qd_robot_data qd_robot];
     
     % Update
     elapsed_time = elapsed_time + timeStep;
@@ -133,8 +145,31 @@ for i=timeIntervals
     
 end
 
-% Compute integral absolute error
-Error_abs_int = sum(abs(e_robot_data),2)./simulation_time
+q_robot_matnovel_data = q_robot_data;
+qd_robot_matnovel_data = qd_robot_data;
+e_robot_matnovel_data = e_robot_data;
+ed_robot_matnovel_data = ed_robot_data;
+theta_hat_matnovel_data = theta_hat_data;
+
+% % Compute integral absolute error
+Error_abs_int = sum(abs(e_robot_matnovel_data),2)./simulation_time
+
+% figure
+% plot(timeIntervals, q_robot_data(1,:), 'LineWidth', 2, 'LineStyle', '-')
+% hold on
+% plot(timeIntervals, qt(1,:), 'LineWidth', 2.5)
+% xlabel('time')
+% ylabel('position')
+% title('joint1 trajectory tracking')
+% grid on
+% 
+% figure
+% plot(timeIntervals, q_robot_data(2,:), 'LineWidth', 2, 'LineStyle', '-')
+% hold on
+% plot(timeIntervals, qt(2,:), 'LineWidth', 2.5)
+% xlabel('time')
+% ylabel('position')
+% title('joint2 trajectory tracking')
 
 figure
 plot(trajTimes,theta_hat_data)
@@ -163,9 +198,10 @@ function curr_phi_f = getFiltered(curr_phi, prev_phi_f, Kfilt, timeStep)
     curr_phi_f = (timeStep*curr_phi + Kfilt*prev_phi_f)/(Kfilt + timeStep);
 end
 
+
 function [qt, qtd, qtdd] = getTrajectoryPt(t)
-    qt = [deg2rad(sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12));... % t=0 -> -17.4534
-          deg2rad(8*sin(0.2*t+2) + 6*sin(0.3*t+10) + 9*sin(0.36*t+12))];        % t=0 -> -0.8189
+    qt = [deg2rad(17.4534 + sin(0.1*t + 2) + 16*sin(0.2*t + 10) + 18*sin(0.3*t + 12));... % t=0 -> -17.4534
+          deg2rad(0.8189 + 8*sin(0.2*t+2) + 6*sin(0.3*t+10) + 9*sin(0.36*t+12))];        % t=0 -> -0.8189
     
     qtd = [deg2rad(cos(t/10 + 2)/10 + (16*cos(t/5 + 10))/5 + (27*cos((3*t)/10 + 12))/5);...
            deg2rad((8*cos(t/5 + 2))/5 + (9*cos((3*t)/10 + 10))/5 + (81*cos((9*t)/25 + 12))/25)];
@@ -175,12 +211,12 @@ function [qt, qtd, qtdd] = getTrajectoryPt(t)
 end
 
 function [M, Vm, G] = getRobotDynamics(q_robot, qd_robot)
-    m1 = 1;
-    m2 = 1;
-    l1 = 1;
-    l2 = 1;
-    Izz1 = 1;
-    Izz2 = 1;
+    m1 = 2.35;
+    m2 = 3.0;
+    l1 = 0.2735;
+    l2 = 0.44;
+    Izz1 = 0.0029375;
+    Izz2 = 0.00375;
     g = 9.81;
 
     M = [m1*l1^2 + m2*(l1^2+l2^2+2*l1*l2*cos(q_robot(2,1)) + Izz1 + Izz2), m2*(l2^2 + l1*l2*cos(q_robot(2,1))) + Izz2; ...
