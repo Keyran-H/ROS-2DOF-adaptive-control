@@ -10,8 +10,8 @@
 #define m2 1
 #define l1 1
 #define l2 1
-#define Izz1 1
-#define Izz2 1
+#define Izz1 0.00166666666667
+#define Izz2 0.00166666666667
 
 // // Custom Gains
 // #define Kr 10.0
@@ -36,7 +36,7 @@ namespace adaptive_controller_ns
         bool init(hardware_interface::EffortJointInterface* hw, ros::NodeHandle &n)
         {
             // Read from the csv file
-            std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trajectory_test_100Hz.csv");
+            std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trajectory_test_1000Hz.csv");
             trajectory = loadTrajectory(file);
             ROS_INFO("Trajectory points detected: %ld", trajectory.size());
 
