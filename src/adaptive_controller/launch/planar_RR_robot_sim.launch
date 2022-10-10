@@ -1,6 +1,6 @@
 <launch>
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find ros_experimenting)/worlds/sim.world"/>
+    <arg name="world_name" value="$(find adaptive_controller)/worlds/sim.world"/>
   </include>
   <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" args="-file $(find ros_experimenting)/models/planar_RR_robot.urdf -urdf -z 1 -model planar_RR_robot"/>
 
