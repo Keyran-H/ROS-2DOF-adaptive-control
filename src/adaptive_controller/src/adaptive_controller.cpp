@@ -3,6 +3,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <std_msgs/Float64.h>
 #include <fstream>
+#include <ros/package.h>
 #include <Eigen/Core>
 
 // Initial Estimates
@@ -13,30 +14,18 @@
 #define Izz1 0.00166666666667
 #define Izz2 0.00166666666667
 
-// // Custom Gains
-// #define Kr 10.0
-// #define Kv 0.01
-// #define Kp 0.1
-// #define Kgamma 0.1
-
-/*
-TO launch this controller
-    roslaunch ros_experimenting sim.launch
-    rosrun gazebo_ros spawn_model -file planar_RR_robot.urdf -urdf -z 1 -model planar_RR_robot
-    roslaunch adaptive_controller/launch/adaptive_controller.launch
-
-OR
-    roslaunch adaptive_controller planar_RR__robot_sim.launch
-*/
-
+// NOTE: Controller is hardcoded to work at 1kHz from sim.world
 namespace adaptive_controller_ns
 {
     class AdaptiveController : public controller_interface::Controller<hardware_interface::EffortJointInterface>
     {
         bool init(hardware_interface::EffortJointInterface* hw, ros::NodeHandle &n)
         {
+            // Get relative package path
+            pckg_path = ros::package::getPath("adaptive_controller");
+
             // Read from the csv file
-            std::ifstream file("/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trajectory_test_1000Hz.csv");
+            std::ifstream file(pckg_path + "/trajectory/trajectory_1000Hz.csv");
             trajectory = loadTrajectory(file);
             ROS_INFO("Trajectory points detected: %ld", trajectory.size());
 
@@ -65,7 +54,6 @@ namespace adaptive_controller_ns
             return true;
         }
 
-        // TODO: Figure out exactly what these arguments mean
         void update(const ros::Time& time, const ros::Duration& period)
         {
             // Make the robot state variables
@@ -86,8 +74,9 @@ namespace adaptive_controller_ns
                 
                 if (!isDataDumped)
                 {
-                    dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/trial.csv");
-                    ROS_INFO("CSV File created"); // Add the location of dump
+                    std::string dumpfile = pckg_path + "/datadump/trajectory_data_1000Hz.csv";
+                    dumpData(sim_states_debug, dumpfile);
+                    ROS_INFO("CSV File created: %s", dumpfile.c_str());
                     isDataDumped = !isDataDumped;
                 }
                 return;
@@ -132,7 +121,6 @@ namespace adaptive_controller_ns
 
             sim_states_debug.push_back(sim_state);
 
-            // ROS_INFO("traj_idx: %d \n", traj_idx);
             tau_prev = tau;
             traj_idx++;
         }
@@ -254,6 +242,7 @@ namespace adaptive_controller_ns
             unsigned int traj_idx = 0;
             Eigen::MatrixXd tau_prev;
             double Kr, Kv, Kp, Kgamma;
+            std::string pckg_path;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
