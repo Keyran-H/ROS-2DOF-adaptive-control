@@ -6,3 +6,4 @@ src/katana_description/
 src/matlab_files/local_experimenting/
 src/matlab_files/data/
 *.asv
+src/adaptive_controller/datadump
