@@ -1,12 +1,10 @@
 <launch>
+  <param name="robot_description" command="xacro $(find adaptive_controller)/models/planar_RR.xacro" />
+  
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find adaptive_controller)/worlds/sim.world"/>
   </include>
-  <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" args="-file $(find ros_experimenting)/models/planar_RR_robot.urdf -urdf -z 1 -model planar_RR_robot"/>
-
-  
-  <!-- <param name="robot_description" command="cat $(find ros_experimenting)/models/planar_RR_robot.urdf" /> -->
-  <param name="robot_description" command="xacro $(find ros_experimenting)/models/planar_RR.xacro" />
+  <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -z 1 -model planar_RR_robot"/>
   
   <rosparam file="$(find adaptive_controller)/config/planar_RR_robot_control.yaml" command="load"/>
 
