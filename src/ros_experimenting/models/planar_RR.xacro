@@ -137,10 +137,10 @@
 
     <!-- Gazebo Plugins -->
     <gazebo>
-        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
             <robotNamespace>/planar_RR_robot</robotNamespace>
             <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-            <controlPeriod>0.01</controlPeriod>
+            <controlPeriod>0.001</controlPeriod>
         </plugin>
     </gazebo>
 
