@@ -6,7 +6,7 @@
 #include <ros/package.h>
 #include <Eigen/Core>
 
-// Initial Estimates
+// Initial Estimates. TODO: Move this to .yaml file
 #define m1 1
 #define m2 1
 #define l1 1
