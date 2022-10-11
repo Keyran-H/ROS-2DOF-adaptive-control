@@ -6,6 +6,8 @@
 #include <ros/package.h>
 #include <Eigen/Core>
 
+// NOTE: This adaptive controller is hardcoded to work at 1kHz, set in sim.world, and using trajectory_1000Hz.csv file.
+
 // Initial Estimates. TODO: Move this to .yaml file
 #define m1 1
 #define m2 1
@@ -14,7 +16,6 @@
 #define Izz1 0.00166666666667
 #define Izz2 0.00166666666667
 
-// NOTE: Controller is hardcoded to work at 1kHz from sim.world
 namespace adaptive_controller_ns
 {
     class AdaptiveController : public controller_interface::Controller<hardware_interface::EffortJointInterface>
@@ -56,7 +57,7 @@ namespace adaptive_controller_ns
 
         void update(const ros::Time& time, const ros::Duration& period)
         {
-            // Make the robot state variables
+            // Read the robot state variables
             Eigen::MatrixXd q_robot(2,1);
             q_robot(0,0) = joints_[0].getPosition();
             q_robot(1,0) = joints_[1].getPosition();
@@ -66,12 +67,10 @@ namespace adaptive_controller_ns
             qd_robot(1,0) = joints_[1].getVelocity();
 
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-            
-            if (traj_idx > trajectory.size() - 1) // Stop sending commands and dump data
-            {
-                joints_[0].setCommand(tau_prev(0,0));
-                joints_[1].setCommand(tau_prev(1,0));
-                
+                        
+            if (traj_idx > trajectory.size() - 1) // At last traj point, dump data and set joint state refs to last traj point.
+            {   
+                traj_idx = trajectory.size() - 1;     
                 if (!isDataDumped)
                 {
                     std::string dumpfile = pckg_path + "/datadump/trajectory_data_1000Hz.csv";
@@ -79,9 +78,8 @@ namespace adaptive_controller_ns
                     ROS_INFO("CSV File created: %s", dumpfile.c_str());
                     isDataDumped = !isDataDumped;
                 }
-                return;
             }
-            else if (traj_idx > 0) // Update theta_hat
+            if (traj_idx > 0) // Update theta_hat
             { 
                 computeError(traj_idx - 1, q_robot, qd_robot, qrd, qrdd, r_robot);
                 Eigen::MatrixXd Phi = getPhi(q_robot, qd_robot, qrd, qrdd); // Update Phi using prev trajectory and current robot states.     
@@ -98,30 +96,31 @@ namespace adaptive_controller_ns
             joints_[0].setCommand(tau(0,0));
             joints_[1].setCommand(tau(1,0));
 
-            std::vector<double> sim_state;
-            sim_state.push_back(time.toSec());
-            sim_state.push_back(period.toSec());
-            sim_state.push_back(q_robot(0,0));
-            sim_state.push_back(q_robot(1,0));
-            sim_state.push_back(qd_robot(0,0));
-            sim_state.push_back(qd_robot(1,0));
-            sim_state.push_back(trajectory[traj_idx][0]); // qt(0,0)
-            sim_state.push_back(trajectory[traj_idx][1]); // qt(1,0)
-            sim_state.push_back(trajectory[traj_idx][2]); // qtd(0,0)
-            sim_state.push_back(trajectory[traj_idx][3]); // qtd(1,0)
-            sim_state.push_back(trajectory[traj_idx][4]); // qtdd(0,0)
-            sim_state.push_back(trajectory[traj_idx][5]); // qtdd(1,0)
-            sim_state.push_back(theta_hat(0,0));
-            sim_state.push_back(theta_hat(1,0));
-            sim_state.push_back(theta_hat(2,0));
-            sim_state.push_back(theta_hat(3,0));
-            sim_state.push_back(theta_hat(4,0));
-            sim_state.push_back(tau(0,0));
-            sim_state.push_back(tau(1,0));
+            if (!isDataDumped)
+            {
+                std::vector<double> sim_state;
+                sim_state.push_back(time.toSec());
+                sim_state.push_back(period.toSec());
+                sim_state.push_back(q_robot(0,0));
+                sim_state.push_back(q_robot(1,0));
+                sim_state.push_back(qd_robot(0,0));
+                sim_state.push_back(qd_robot(1,0));
+                sim_state.push_back(trajectory[traj_idx][0]); // qt(0,0)
+                sim_state.push_back(trajectory[traj_idx][1]); // qt(1,0)
+                sim_state.push_back(trajectory[traj_idx][2]); // qtd(0,0)
+                sim_state.push_back(trajectory[traj_idx][3]); // qtd(1,0)
+                sim_state.push_back(trajectory[traj_idx][4]); // qtdd(0,0)
+                sim_state.push_back(trajectory[traj_idx][5]); // qtdd(1,0)
+                sim_state.push_back(theta_hat(0,0));
+                sim_state.push_back(theta_hat(1,0));
+                sim_state.push_back(theta_hat(2,0));
+                sim_state.push_back(theta_hat(3,0));
+                sim_state.push_back(theta_hat(4,0));
+                sim_state.push_back(tau(0,0));
+                sim_state.push_back(tau(1,0));
+                sim_states_debug.push_back(sim_state);
+            }
 
-            sim_states_debug.push_back(sim_state);
-
-            tau_prev = tau;
             traj_idx++;
         }
 
@@ -240,7 +239,6 @@ namespace adaptive_controller_ns
             std::vector<std::vector<double>> trajectory;
             Eigen::MatrixXd theta_hat;
             unsigned int traj_idx = 0;
-            Eigen::MatrixXd tau_prev;
             double Kr, Kv, Kp, Kgamma;
             std::string pckg_path;
 
