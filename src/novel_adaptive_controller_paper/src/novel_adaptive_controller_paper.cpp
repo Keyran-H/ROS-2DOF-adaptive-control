@@ -7,12 +7,13 @@
 #include <Eigen/LU>
 
 // Initial Estimates
-#define m1 2.35
-#define m2 3.0
-#define l1 0.2735
-#define l2 0.44
-#define Izz1 0.0029375
-#define Izz2 0.00375
+#define m1 2.4
+#define m2 2.9
+#define l1 0.3
+#define l2 0.4
+#define Izz1 0.002
+#define Izz2 0.004
+
 
 /*
 TO launch this controller
@@ -56,7 +57,6 @@ namespace novel_adaptive_controller_paper_ns
             n.getParam("gains/Komega2", Komega2);
 
             W_t_prev = Kinit*Eigen::MatrixXd::Identity(5, 5);
-            std::cout << W_t_prev;
 
             ROS_INFO("Initialisation complete!");
 
@@ -80,7 +80,7 @@ namespace novel_adaptive_controller_paper_ns
             Eigen::MatrixXd qt_qtd_qtdd_prev = getTrajectory(elapsed_time - period.toSec());
 
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-            if (elapsed_time > 10.0) // Stop sending commands and dump data
+            if (elapsed_time > 60.0) // Stop sending commands and dump data
             {
                 joints_[0].setCommand(tau_prev(0,0));
                 joints_[1].setCommand(tau_prev(1,0));
