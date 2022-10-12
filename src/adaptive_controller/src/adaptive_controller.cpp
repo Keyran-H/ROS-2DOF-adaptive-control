@@ -6,7 +6,7 @@
 #include <ros/package.h>
 #include <Eigen/Core>
 
-// NOTE: This adaptive controller is hardcoded to work at 1kHz, set in sim.world, and using trajectory_1000Hz.csv file.
+// NOTE: This adaptive controller is hardcoded to work at 1kHz. Frequency is set in sim.world and trajectory is set using trajectory_1000Hz.csv file.
 
 // Initial Estimates. TODO: Move this to .yaml file
 #define m1 1
