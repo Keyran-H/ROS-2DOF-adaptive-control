@@ -8,15 +8,15 @@ The repository comprises two ROS packages, each using a custom ros_control contr
 
 # Running the simulations
 
-Use "planar_RR_robot_sim.launch" to run the simulation in the *adaptive_controller* ROS Package:
+Use "planar_RR_robot_sim.launch" to run the simulation from the *adaptive_controller* ROS Package:
 
 `roslaunch adaptive_controller planar_RR_robot_sim.launch`
 
-Use "BERT2_sim.launch" to run the simulation in the *novel_adaptive_controller_paper* ROS Package:
+Use "BERT2_sim.launch" to run the simulation from the *novel_adaptive_controller_paper* ROS Package:
 
 `roslaunch novel_adaptive_controller_paper BERT2_sim.launch`
 
-The parameters for the simulation can be adjusted using the yaml file in the config folder. The GIF shows the simulation from the *adaptive_controller* ROS package.
+The controller parameters for the simulation can be adjusted using the yaml file from the config folder for the respective ROS package. The GIF shows the simulation from the *adaptive_controller* ROS package.
 
 <p align="center">
     <img src="https://github.com/Keyran-H/ros_experimenting_ws/blob/main/src/gif/GradientDescentPlanarRobot.gif" width="30%" height="30%"/>
@@ -24,7 +24,7 @@ The parameters for the simulation can be adjusted using the yaml file in the con
 
 # Miscellaneous
 
-Software Versions:
+Software Version:
 - ROS: melodic
 - Gazebo: 9.0.0
 
