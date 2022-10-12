@@ -16,7 +16,7 @@ Use the BERT2_sim.launch to run the simulation for the novel adaptive controller
 
 The parameters for the simulation can be adjusted using the yaml file in the config folder. Here is an example of the simulation with the adaptive_controller ROS package.
 
-![](https://github.com/Keyran-H/src/gif/GradientDescentPlanarRobot.gif)
+![](./gif/GradientDescentPlanarRobot.gif)
 
 # Miscellaneous
 
