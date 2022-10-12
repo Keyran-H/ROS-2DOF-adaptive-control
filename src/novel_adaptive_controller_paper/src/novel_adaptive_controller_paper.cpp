@@ -7,7 +7,11 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
-// Initial Estimates
+// NOTE: This adaptive controller is hardcoded to work at 1kHz. Frequency is set in sim.world.
+
+// Initial Estimates. 
+// TODO: Move initial estimates to .yaml file
+// NOTE: There is a small mismatch between real and sim parameters
 #define m1 2.4
 #define m2 2.9
 #define l1 0.3
@@ -49,6 +53,7 @@ namespace novel_adaptive_controller_paper_ns
             n.getParam("gains/Kinit", Kinit);
             n.getParam("gains/Komega1", Komega1);
             n.getParam("gains/Komega2", Komega2);
+            n.getParam("/BERT2_robot/Simulation/duration", sim_duration);
 
             W_t_prev = Kinit*Eigen::MatrixXd::Identity(5, 5);
 
@@ -73,7 +78,6 @@ namespace novel_adaptive_controller_paper_ns
             Eigen::MatrixXd qt_qtd_qtdd_prev = getTrajectory(elapsed_time - period.toSec());
 
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-            double sim_duration = 5.0;
             if (elapsed_time > sim_duration) // Make robot stop at last ref point and dump data
             {
                 qt_qtd_qtdd = getTrajectory(sim_duration);
@@ -353,20 +357,20 @@ namespace novel_adaptive_controller_paper_ns
         private:
             hardware_interface::JointHandle joints_[2];
             double command_[2];
+            double Kr, Kv, Kp, Kgamma;
+            double Kfilt, Kff, Kinit, Komega1, Komega2;
+            double elapsed_time = 0;
+            double sim_duration;
             ros::Subscriber sub_command_;
             Eigen::MatrixXd theta_hat;
             Eigen::MatrixXd tau_prev;
-            double Kr, Kv, Kp, Kgamma;
-            double elapsed_time = 0;
-            double Kfilt, Kff, Kinit, Komega1, Komega2;
             Eigen::MatrixXd Phi_m1f_prev, Phi_m2f_prev, Phi_vgf_prev, tau_f_prev, Phi_f_prev, W_t_prev, N_t_prev;
             std::vector<double> elapsed_time_ts;
             std::vector<Eigen::MatrixXd> Phi_f_all;
             std::string pckg_path;
-
-            // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
             bool isDataDumped = false;
+            bool UseNovelControl;
 
     };
 

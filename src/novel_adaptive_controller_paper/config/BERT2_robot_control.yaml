@@ -20,3 +20,7 @@ BERT2_robot:
       Kinit: 0.001
       Komega1: 0
       Komega2: 0.1
+  
+  # Simulation Parameters -----------
+  Simulation:
+    duration: 15.0 # seconds
