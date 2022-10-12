@@ -3,6 +3,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <std_msgs/Float64.h>
 #include <fstream>
+#include <ros/package.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
 
@@ -15,22 +16,15 @@
 #define Izz2 0.004
 
 
-/*
-TO launch this controller
-    roslaunch ros_experimenting sim.launch
-    rosrun gazebo_ros spawn_model -file planar_RR_robot.urdf -urdf -z 1 -model planar_RR_robot
-    roslaunch adaptive_controller/launch/adaptive_controller.launch
-
-OR
-    roslaunch adaptive_controller planar_RR__robot_sim.launch
-*/
-
 namespace novel_adaptive_controller_paper_ns
 {
     class NovelAdaptiveControllerPaper : public controller_interface::Controller<hardware_interface::EffortJointInterface>
     {
         bool init(hardware_interface::EffortJointInterface* hw, ros::NodeHandle &n)
         {
+            // Get relative package path
+            pckg_path = ros::package::getPath("novel_adaptive_controller_paper");
+
             // Get the joint names
             std::vector<std::string> joint_names;
             if(!n.getParam("joints", joint_names) || joint_names.size() != 2)
@@ -63,7 +57,6 @@ namespace novel_adaptive_controller_paper_ns
             return true;
         }
 
-        // TODO: Figure out exactly what these arguments mean
         void update(const ros::Time& time, const ros::Duration& period)
         {
             // Make the robot state variables
@@ -80,20 +73,20 @@ namespace novel_adaptive_controller_paper_ns
             Eigen::MatrixXd qt_qtd_qtdd_prev = getTrajectory(elapsed_time - period.toSec());
 
             Eigen::MatrixXd qrd, qrdd, r_robot, theta_hat_d;
-            if (elapsed_time > 60.0) // Stop sending commands and dump data
+            double sim_duration = 5.0;
+            if (elapsed_time > sim_duration) // Make robot stop at last ref point and dump data
             {
-                joints_[0].setCommand(tau_prev(0,0));
-                joints_[1].setCommand(tau_prev(1,0));
-                
+                qt_qtd_qtdd = getTrajectory(sim_duration);
+                qt_qtd_qtdd_prev = getTrajectory(sim_duration - period.toSec());                
                 if (!isDataDumped)
                 {
-                    dumpData(sim_states_debug, "/home/kiran/dissertation/ros_experimenting_ws/src/matlab_files/data/novel_adaptive_data_paper.csv");
-                    ROS_INFO("CSV File created"); // Add the location of dump
+                    std::string dumpfile = pckg_path + "/datadump/BERT2_data.csv";
+                    dumpData(sim_states_debug, dumpfile);
+                    ROS_INFO("CSV File created: %s", dumpfile.c_str());
                     isDataDumped = !isDataDumped;
                 }
-                return;
             }
-            else if (elapsed_time > 0) // Update theta_hat using preveious timestep input and it's output
+            if (elapsed_time > 0) // Update theta_hat using preveious timestep input and it's output
             {
                 // Get the phi matrices using output from previous timestep
                 Eigen::MatrixXd Phi_m1_curr = getPhi_m1(q_robot, qd_robot);
@@ -150,32 +143,31 @@ namespace novel_adaptive_controller_paper_ns
             joints_[0].setCommand(tau(0,0));
             joints_[1].setCommand(tau(1,0));
 
-            std::vector<double> sim_state;
-            sim_state.push_back(time.toSec());
-            sim_state.push_back(period.toSec());
-            sim_state.push_back(q_robot(0,0));
-            sim_state.push_back(q_robot(1,0));
-            sim_state.push_back(qd_robot(0,0));
-            sim_state.push_back(qd_robot(1,0));
-            sim_state.push_back(qt_qtd_qtdd_prev(0,0));
-            sim_state.push_back(qt_qtd_qtdd_prev(1,0));
-            sim_state.push_back(qt_qtd_qtdd_prev(2,0));
-            sim_state.push_back(qt_qtd_qtdd_prev(3,0));
-            sim_state.push_back(qt_qtd_qtdd_prev(4,0));
-            sim_state.push_back(qt_qtd_qtdd_prev(5,0));
-            sim_state.push_back(theta_hat(0,0));
-            sim_state.push_back(theta_hat(1,0));
-            sim_state.push_back(theta_hat(2,0));
-            sim_state.push_back(theta_hat(3,0));
-            sim_state.push_back(theta_hat(4,0));
-            sim_state.push_back(tau(0,0));
-            sim_state.push_back(tau(1,0));
+            if (!isDataDumped)
+            {
+                std::vector<double> sim_state;
+                sim_state.push_back(time.toSec());
+                sim_state.push_back(period.toSec());
+                sim_state.push_back(q_robot(0,0));
+                sim_state.push_back(q_robot(1,0));
+                sim_state.push_back(qd_robot(0,0));
+                sim_state.push_back(qd_robot(1,0));
+                sim_state.push_back(qt_qtd_qtdd_prev(0,0));
+                sim_state.push_back(qt_qtd_qtdd_prev(1,0));
+                sim_state.push_back(qt_qtd_qtdd_prev(2,0));
+                sim_state.push_back(qt_qtd_qtdd_prev(3,0));
+                sim_state.push_back(qt_qtd_qtdd_prev(4,0));
+                sim_state.push_back(qt_qtd_qtdd_prev(5,0));
+                sim_state.push_back(theta_hat(0,0));
+                sim_state.push_back(theta_hat(1,0));
+                sim_state.push_back(theta_hat(2,0));
+                sim_state.push_back(theta_hat(3,0));
+                sim_state.push_back(theta_hat(4,0));
+                sim_state.push_back(tau(0,0));
+                sim_state.push_back(tau(1,0));
+                sim_states_debug.push_back(sim_state);
+            }
 
-            sim_states_debug.push_back(sim_state);
-
-            std::cout << elapsed_time;
-            std::cout << std::endl;
-            // ROS_INFO("CP"); // Add the location of dump
             tau_prev = tau;
             elapsed_time += period.toSec();
         }
@@ -245,26 +237,22 @@ namespace novel_adaptive_controller_paper_ns
 
         Eigen::MatrixXd getPhi_m1(Eigen::MatrixXd q_robot, Eigen::MatrixXd qd_robot)
         {
-            // std::cout << "\r\n\r\n getPhi_m1 CP0 \r\n\r\n";
             double q1 = q_robot(0,0);
             double q2 = q_robot(1,0);
             double q1d = qd_robot(0,0);
             double q2d = qd_robot(1,0);
 
-            // std::cout << "\r\n\r\n getPhi_m1 CP1 \r\n\r\n";
             Eigen::MatrixXd Phi_m1(2,5);
             Phi_m1(0,0) = q1d;
             Phi_m1(0,1) = 2*cos(q2)*q1d + cos(q2)*q2d;
             Phi_m1(0,2) = q2d;
             Phi_m1(0,3) = 0;
             Phi_m1(0,4) = 0;
-            // std::cout << "\r\n\r\n getPhi_m1 CP2 \r\n\r\n";
             Phi_m1(1,0) = 0;
             Phi_m1(1,1) = cos(q2)*q1d;
             Phi_m1(1,2) = q1d + q2d;
             Phi_m1(1,3) = 0;
             Phi_m1(1,4) = 0;
-            // std::cout << "\r\n\r\n getPhi_m1 CP3 \r\n\r\n";
             return Phi_m1;
         }
         
@@ -374,6 +362,7 @@ namespace novel_adaptive_controller_paper_ns
             Eigen::MatrixXd Phi_m1f_prev, Phi_m2f_prev, Phi_vgf_prev, tau_f_prev, Phi_f_prev, W_t_prev, N_t_prev;
             std::vector<double> elapsed_time_ts;
             std::vector<Eigen::MatrixXd> Phi_f_all;
+            std::string pckg_path;
 
             // Debug variables
             std::vector<std::vector<double>> sim_states_debug;
