@@ -8,7 +8,9 @@
 
 // NOTE: This adaptive controller is hardcoded to work at 1kHz. Frequency is set in sim.world and trajectory is set using trajectory_1000Hz.csv file.
 
-// Initial Estimates. TODO: Move this to .yaml file
+// Initial Estimates. 
+// TODO: Move initial estimates to .yaml file
+// NOTE: There is no mismatch between real and sim parameters
 #define m1 1
 #define m2 1
 #define l1 1
