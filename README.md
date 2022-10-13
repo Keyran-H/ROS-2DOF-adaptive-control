@@ -17,7 +17,7 @@ Use "BERT2_sim.launch" to run the simulation from *novel_adaptive_controller_pap
 The controller parameters for the simulation can be adjusted using the yaml file from the config folder for the respective ROS package. The GIF shows the simulation from the *adaptive_controller* ROS package.
 
 <p align="center">
-    <img src="https://github.com/Keyran-H/ros_experimenting_ws/blob/main/src/gif/GradientDescentPlanarRobot.gif" width="30%" height="30%"/>
+    <img src="https://github.com/Keyran-H/ros_experimenting_ws/blob/main/gif/GradientDescentPlanarRobot.gif" width="30%" height="30%"/>
 </p>
 
 # Miscellaneous
