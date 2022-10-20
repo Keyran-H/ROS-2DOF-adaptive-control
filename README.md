@@ -4,6 +4,12 @@ The repository comprises two ROS packages and a folder containing matlab scripts
 - *adaptive_controller*: Used to simulate a torque controlled 2DOF Planar robot in Gazebo with a gradient descent adaptive controller.
 - *novel_adaptive_controller_paper*: Used to simulate a torque controlled 2DOF humanoid robot arm in Gazebo with a novel adaptive controller from [this](https://www.sciencedirect.com/science/article/abs/pii/S0921889013001887) paper.
 
+The GIF shows the simulation from the *adaptive_controller* ROS package and demonstrates a 2DOF robot tracing a trajectory at 1KHz. The adapted parameters are saved in a CSV file and can be plotted after the simulation is completed.
+
+<p align="center">
+    <img src="https://github.com/Keyran-H/ros_experimenting_ws/blob/main/gif/GradientDescentPlanarRobot.gif" width="30%" height="30%"/>
+</p>
+
 # Running the simulations
 
 Use "planar_RR_robot_sim.launch" to run the simulation from *adaptive_controller*:
@@ -14,11 +20,7 @@ Use "BERT2_sim.launch" to run the simulation from *novel_adaptive_controller_pap
 
 `roslaunch novel_adaptive_controller_paper BERT2_sim.launch`
 
-The controller parameters for the simulation can be adjusted using the yaml file from the config folder for the respective ROS package. The GIF shows the simulation from the *adaptive_controller* ROS package.
-
-<p align="center">
-    <img src="https://github.com/Keyran-H/ros_experimenting_ws/blob/main/gif/GradientDescentPlanarRobot.gif" width="30%" height="30%"/>
-</p>
+The controller parameters for the simulation can be adjusted using the yaml file from the config folder for the respective ROS package.
 
 # Miscellaneous
 
