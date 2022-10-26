@@ -1,4 +1,4 @@
-# Adaptive Control of a 2DOF Planar Robot
+# Adaptive Control of 2DOF Planar Robots
 
 The repository comprises two ROS packages and a folder containing matlab scripts used for processing and visualising data. The ROS packages are:
 - *adaptive_controller*: Used to simulate a torque controlled 2DOF Planar robot in Gazebo with a gradient descent adaptive controller.
