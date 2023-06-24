@@ -12,7 +12,7 @@ Both packages use an indirect adaptive control strategy and is conceptually show
 
 The four main components of the indirect adaptive control strategy are:
 
-- Trajectory: This is the reference the robot must follow. The trajectory defines the position $q_{d}(t)$, velocity $\dot{q}_{d}(t)$ and acceleration $\ddot{q}_{d}(t)$ for each joint on the robot.
+- Trajectory: This is the reference the robot must follow. The trajectory defines the position, velocity and acceleration for each joint on the robot.
 - Adaptive Law: Block represents the equations used to estimate the parameters $\hat{\Theta}$ of the robot.
 - Control Law: This comprise the equations used to generate torque inputs $\tau$ for joint actuation.
 - Robot: Block represents the real or simulated robot.
