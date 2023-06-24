@@ -7,7 +7,7 @@ The repository comprises two ROS packages and a folder containing matlab scripts
 Both packages use an indirect adaptive control strategy and is conceptually shown in the image below. Indirect adaptive control is simply a technique used for estimating model parameters (for example, link mass) while controlling the robot.
 
 <p align="center">
-    <img src="media/indirect_adaptive_control.svg"/>
+    <img src="media/indirect_adaptive_control.svg" width="70%"/>
 </p>
 
 The four main components of the indirect adaptive control strategy are:
