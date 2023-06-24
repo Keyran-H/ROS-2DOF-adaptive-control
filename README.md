@@ -4,6 +4,19 @@ The repository comprises two ROS packages, each using a custom ros_control contr
 - *adaptive_controller*: Used to simulate a torque controlled 2DOF Planar robot in Gazebo with a gradient descent adaptive controller.
 - *novel_adaptive_controller_paper*: Used to simulate a torque controlled 2DOF humanoid robot arm in Gazebo with a novel adaptive controller from [this](https://www.sciencedirect.com/science/article/abs/pii/S0921889013001887) paper.
 
+Both packages use an indirect adaptive control strategy and is conceptually shown in the image below. Indirect adaptive control is simply a technique used for estimating model parameters (for example, link mass) while controlling the robot.
+
+<p align="center">
+    <img src="media/indirect_adaptive_control.jpg"/>
+</p>
+
+The four main components of the indirect adaptive control strategy are:
+
+- Trajectory: This is the reference the robot must follow. The trajectory defines the position $q_{d}(t)$, velocity $\dot{q}_{d}(t)$ and acceleration $\ddot{q}_{d}(t)$ for each joint on the robot.
+- Adaptive Law: Block represents the equations used to estimate the parameters $\hat{\Theta}$ of the robot.
+- Control Law: This comprise the equations used to generate torque inputs $\tau$ for joint actuation.
+- Robot: Block represents the real or simulated robot.
+
 # Running the simulations
 
 Use "planar_RR_robot_sim.launch" to run the simulation from the *adaptive_controller* ROS Package:
@@ -17,7 +30,7 @@ Use "BERT2_sim.launch" to run the simulation from the *novel_adaptive_controller
 The controller parameters for the simulation can be adjusted using the yaml file from the config folder for the respective ROS package. The GIF shows the simulation from the *adaptive_controller* ROS package.
 
 <p align="center">
-    <img src="https://github.com/Keyran-H/ros_experimenting_ws/blob/main/src/gif/GradientDescentPlanarRobot.gif" width="30%" height="30%"/>
+    <img src="media/GradientDescentPlanarRobot.gif" width="30%" height="30%"/>
 </p>
 
 # Miscellaneous
